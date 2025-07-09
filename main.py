@@ -3,6 +3,8 @@ import pathlib
 
 from pickle_manager import PicklesManager
 
+import shutil
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog = 'pickles-redux',
@@ -52,10 +54,29 @@ def parse_args() -> argparse.Namespace:
 
     return parser.parse_args()
 
+def make_outdir(args: argparse.Namespace):
+    try:
+        args.outdir.mkdir()
+    except FileNotFoundError as e:
+        print(e)
+        exit(1)
+    except FileExistsError as e:
+        if not args.force: # default case
+            print(e)
+            exit(1)
+        else:
+            shutil.rmtree(args.outdir)
+            args.outdir.mkdir()
+    
+    (args.outdir / 'logs').mkdir()
+    (args.outdir / 'batches').mkdir()
+
+
+
 
 def main():
     args = parse_args()
+    make_outdir(args)
     manager = PicklesManager.from_namespace(args)
-    print(manager)
 
 if __name__ == '__main__': main()
