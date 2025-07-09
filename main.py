@@ -101,7 +101,7 @@ def make_outdir(args: argparse.Namespace):
 
 def logging_setup(args: argparse.Namespace):
     formatter = logging.Formatter(
-        '%(asctime)s | %(name)s (%(process)d): %(message)s'
+        '%(asctime)s | %(levelname)s | %(name)s (%(process)d): %(message)s'
     )
 
     level = 30 + 10 * (args.quiet - args.verbose)
@@ -140,5 +140,6 @@ def main():
     logger.warning('WARNING test')
     logger.critical('CRITICAL test')
     manager = PicklesManager.from_namespace(args)
+    manager.start()
 
 if __name__ == '__main__': main()
