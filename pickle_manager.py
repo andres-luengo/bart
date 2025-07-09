@@ -50,7 +50,7 @@ class PicklesManager:
         worker_listener = logging.handlers.QueueListener(
             log_queue,
             *logging.getLogger().handlers,
-            respect_handler_level = True # WHY IS THIS NOT THE DEFAULT????????????????????
+            respect_handler_level = True # WHY IS THIS NOT THE DEFAULT*????????????????????
         )
         worker_listener.start()
 
@@ -66,3 +66,7 @@ class PicklesManager:
             [*results]
         
         worker_listener.stop()
+
+
+# *like.
+# very_normal_ok_function(EXPLODE_ORPHANAGE = False) # otherwise orphanage explodes
