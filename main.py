@@ -3,6 +3,8 @@ import pathlib
 
 from pickle_manager import PicklesManager
 
+import logging
+import logging.handlers
 import shutil
 
 def parse_args() -> argparse.Namespace:
@@ -49,7 +51,32 @@ def parse_args() -> argparse.Namespace:
         '--num-batches',
         default = 100,
         type = int,
-        help = 'This program breaks up processing into NUM_BATCHES batches. In case something bad happens or one batch output gets corrupted, the others should be fine. Defaults to 100'
+        help = (
+            'This program breaks up processing into NUM_BATCHES batches. '
+            'In case something bad happens or one batch output gets corrupted, the others should be fine. '
+            'Defaults to 100.'
+            )
+    )
+
+    parser.add_argument(
+        '-v', '--verbose',
+        action = 'count',
+        default = 0,
+        help = (
+            'Each repetition of this flag adds a level of logging below WARNING '
+            'to print to stdout. For example, -vv adds INFO and DEBUG. '
+            'Defaults to no repetitions, so just WARNING and above.'
+            )
+    )
+    parser.add_argument(
+        '-q', '--quiet',
+        action = 'count',
+        default = 0,
+        help = (
+            'Levels of logging at or above WARNING to mute. '
+            'For example, -qq mutes WARNING, and ERROR, but leaves in CRITICAL. '
+            'Defaults to no repetitions, so leaves WARNING and above.'
+            )
     )
 
     return parser.parse_args()
@@ -72,11 +99,46 @@ def make_outdir(args: argparse.Namespace):
     (args.outdir / 'batches').mkdir()
 
 
+def logging_setup(args: argparse.Namespace):
+    formatter = logging.Formatter(
+        '%(asctime)s | %(name)s (%(process)d): %(message)s'
+    )
 
+    level = 30 + 10 * (args.quiet - args.verbose)
+    stderr_handler = logging.StreamHandler()
+    stderr_handler.setLevel(level)
+    stderr_handler.setFormatter(formatter)
+
+    file_handler = logging.handlers.RotatingFileHandler(
+        filename = args.outdir / 'logs' / 'all_logs.log',
+        maxBytes = 256 * 2**10, # 256 KiB
+        backupCount = 3, # so max of 4 * 256 KiB = 1 MiB,
+    )
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(formatter)
+
+    # if error files long enough that this is a problem, there are bigger ones
+    err_file_handler = logging.FileHandler(
+        filename = args.outdir / 'logs' / 'error_logs.log'
+    )
+    err_file_handler.setLevel(logging.ERROR)
+    err_file_handler.setFormatter(formatter)
+
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(stderr_handler)
+    logger.addHandler(file_handler)
+    logger.addHandler(err_file_handler)
+
+    return logger
 
 def main():
     args = parse_args()
     make_outdir(args)
+    logger = logging_setup(args)
+    logger.debug('DEBUG test')
+    logger.warning('WARNING test')
+    logger.critical('CRITICAL test')
     manager = PicklesManager.from_namespace(args)
 
 if __name__ == '__main__': main()
