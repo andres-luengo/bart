@@ -3,8 +3,7 @@ import pathlib
 
 from pickle_manager import PicklesManager
 
-import logging
-import logging.handlers
+import logging, logging.handlers
 import shutil
 
 def parse_args() -> argparse.Namespace:
@@ -88,7 +87,7 @@ def make_outdir(args: argparse.Namespace):
         print(e)
         exit(1)
     except FileExistsError as e:
-        if not args.force: # default case
+        if not args.force:
             print(e)
             exit(1)
         else:
@@ -100,6 +99,8 @@ def make_outdir(args: argparse.Namespace):
 
 
 def logging_setup(args: argparse.Namespace):
+    logger = logging.getLogger()
+
     formatter = logging.Formatter(
         '%(asctime)s | %(levelname)s | %(name)s (%(process)d): %(message)s'
     )
@@ -124,22 +125,15 @@ def logging_setup(args: argparse.Namespace):
     err_file_handler.setLevel(logging.ERROR)
     err_file_handler.setFormatter(formatter)
 
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
     logger.addHandler(stderr_handler)
     logger.addHandler(file_handler)
     logger.addHandler(err_file_handler)
-
-    return logger
+    logger.setLevel(logging.DEBUG)
 
 def main():
     args = parse_args()
     make_outdir(args)
-    logger = logging_setup(args)
-    logger.debug('DEBUG test')
-    logger.warning('WARNING test')
-    logger.critical('CRITICAL test')
     manager = PicklesManager.from_namespace(args)
-    manager.start()
+    manager.run()
 
 if __name__ == '__main__': main()
