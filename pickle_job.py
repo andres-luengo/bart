@@ -1,6 +1,5 @@
 import logging
 
-# does everything caleb's code does minus the managerial nonsense
 class PickleJob:
     def __init__(self, batch: list[list[str]]):
         self._batch = batch
