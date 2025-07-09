@@ -13,29 +13,38 @@ def parse_args() -> argparse.Namespace:
             'pickles 2 :)'
         )
     )
-    parser.add_argument(
+    io_group = parser.add_argument_group('Input and Output')
+    io_group.add_argument(
         'infile',
         type = argparse.FileType('r'),
         help = 'Path to a file containing the paths to every .h5 file to be analyzed, separated by newlines.'
     )
-    parser.add_argument(
+    io_group.add_argument(
         'outdir',
         type = pathlib.Path,
         help = 'Path to desired output folder'
     )
-    parser.add_argument(
+    io_group.add_argument(
         '-f', '--force',
         action = 'store_true',
         help = 'If present and outdir already exists, it will be overwritten.'
     )
 
-    parser.add_argument(
+    processing_group = parser.add_argument_group('Processing')
+    processing_group.add_argument(
+        '--frequency-block-size',
+        type = int,
+        help = 'Each scan is broken up into frequency blocks of this size before computing statistics.'
+    )
+
+    resource_management_group = parser.add_argument_group('Resource Management')
+    resource_management_group.add_argument(
         '-n', '--num-processes',
         default = 1,
         type = int,
         help = 'Number of processes to use while processing in parallel.'
     )
-    parser.add_argument(
+    resource_management_group.add_argument(
         '-m', '--max-rss-gb',
         default = 32.0,
         type = float,
@@ -46,7 +55,7 @@ def parse_args() -> argparse.Namespace:
         )
     )
 
-    parser.add_argument(
+    resource_management_group.add_argument(
         '--num-batches',
         default = 100,
         type = int,
@@ -57,7 +66,8 @@ def parse_args() -> argparse.Namespace:
             )
     )
 
-    parser.add_argument(
+    logging_group = parser.add_argument_group('Logging')
+    logging_group.add_argument(
         '-v', '--verbose',
         action = 'count',
         default = 0,
@@ -67,7 +77,7 @@ def parse_args() -> argparse.Namespace:
             'Defaults to no repetitions, so just WARNING and above.'
             )
     )
-    parser.add_argument(
+    logging_group.add_argument(
         '-q', '--quiet',
         action = 'count',
         default = 0,
