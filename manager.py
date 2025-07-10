@@ -1,4 +1,4 @@
-from process import PickleJob
+from process import BatchJob
 
 from argparse import Namespace
 from pathlib import Path
@@ -9,20 +9,35 @@ import logging, logging.handlers
 
 from collections import deque
 
+from typing import Any
+
 # splits up files into batches
 # does multiprocessing stuff
 # manages file nonsense
 # manages resources
 class PicklesManager:
-    def __init__(self, num_batches: int, num_processes: int, files: tuple[Path, ...], outdir: Path):
-        self._num_processes = num_processes
-        self._batches: tuple[tuple[Path, ...], ...] = tuple(files[i::num_batches] for i in range(num_batches))
-        self._outdir = outdir
+    def __init__(
+            self, 
+            process_params: dict[str, Any],
+            num_batches: int, 
+            num_processes: int, 
+            files: tuple[Path, ...], 
+            outdir: Path
+    ):
+        self.process_params = process_params
+        self.num_processes = num_processes
+        self.batches: tuple[tuple[Path, ...], ...] = tuple(
+            files[i::num_batches] for i in range(num_batches)
+        )
+        self.outdir = outdir
         self._logger = logging.getLogger(__name__)
 
     @classmethod
     def from_namespace(cls, arg: Namespace, files: tuple[Path, ...]):
         return cls(
+            process_params = {
+                'freq_window' : arg.frequency_block_size
+            },
             num_batches = arg.num_batches,
             num_processes = arg.num_processes,
             files = files,
@@ -37,9 +52,9 @@ class PicklesManager:
         logger.addHandler(handler)
     
     @staticmethod
-    def batch_job(args: tuple[Path, tuple[Path, ...], int]):
+    def batch_job(args: tuple[dict[str, Any], Path, tuple[Path, ...], int]):
         try:
-            job = PickleJob(*args)
+            job = BatchJob(*args)
             return job.run()
         except Exception as e:
             id: int = args[-1]
@@ -52,8 +67,13 @@ class PicklesManager:
         self._logger.info('Starting jobs...')
 
         batch_args = (
-            (self._outdir, batch, i)
-            for i, batch in enumerate(self._batches)
+            (
+                self.process_params,
+                self.outdir / 'batches',
+                batch, 
+                i
+            )
+            for i, batch in enumerate(self.batches)
         )
 
         log_queue = Manager().Queue()
@@ -65,7 +85,7 @@ class PicklesManager:
         worker_listener.start()
 
         with Pool(
-            processes=self._num_processes,
+            processes=self.num_processes,
             initializer=self.worker_init,
             initargs=(log_queue,)
         ) as p:

@@ -42,7 +42,8 @@ def parse_args() -> argparse.Namespace:
     processing_group.add_argument(
         '--frequency-block-size',
         type = int,
-        help = 'Each scan is broken up into frequency blocks of this size before computing statistics.'
+        help = 'Each scan is broken up into frequency blocks of this size before computing statistics.',
+        default = 1024 # this is what caleb uses
     )
 
     resource_management_group = parser.add_argument_group('Resource Management')
