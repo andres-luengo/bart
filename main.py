@@ -1,5 +1,5 @@
 import argparse
-import pathlib
+from pathlib import Path
 
 from manager import PicklesManager
 
@@ -7,6 +7,7 @@ import logging, logging.handlers
 import shutil
 
 from io import TextIOWrapper
+import sys
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -23,13 +24,18 @@ def parse_args() -> argparse.Namespace:
     )
     io_group.add_argument(
         'outdir',
-        type = pathlib.Path,
+        type = Path,
         help = 'Path to desired output folder'
     )
     io_group.add_argument(
         '-f', '--force',
         action = 'store_true',
         help = 'If present and outdir already exists, it will be overwritten.'
+    )
+    io_group.add_argument(
+        '--no-verify',
+        action = 'store_true',
+        help = 'If present, errors out if any of the paths passed into infile do not exist.'
     )
 
     processing_group = parser.add_argument_group('Processing')
@@ -127,7 +133,7 @@ def logging_setup(args: argparse.Namespace):
         maxBytes = 256 * 2**10, # 256 KiB
         backupCount = 3, # so max of 4 * 256 KiB = 1 MiB,
     )
-    file_handler.setLevel(logging.DEBUG)
+    file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(formatter)
 
     # if error files long enough that this is a problem, there are bigger ones
@@ -142,8 +148,10 @@ def logging_setup(args: argparse.Namespace):
     logger.addHandler(err_file_handler)
     logger.setLevel(logging.DEBUG)
 
-def get_file_names(file: TextIOWrapper):
-    return file.read().strip().splitlines()
+def get_file_names(file: TextIOWrapper) -> tuple[Path, ...]:
+    lines = file.read().strip().splitlines()
+    paths = map(Path, lines)
+    return tuple(paths)
 
 def main():
     args = parse_args()

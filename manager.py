@@ -1,26 +1,27 @@
 from process import PickleJob
 
 from argparse import Namespace
-from io import TextIOWrapper
 from pathlib import Path
 
 from multiprocessing import Pool, Manager, Queue
 
 import logging, logging.handlers
 
+from collections import deque
+
 # splits up files into batches
 # does multiprocessing stuff
 # manages file nonsense
 # manages resources
 class PicklesManager:
-    def __init__(self, num_batches: int, num_processes: int, files: list[str], outdir: Path):
+    def __init__(self, num_batches: int, num_processes: int, files: tuple[Path, ...], outdir: Path):
         self._num_processes = num_processes
         self._batches = [files[i::num_batches] for i in range(num_batches)]
         self._outdir = outdir
         self._logger = logging.getLogger(__name__)
 
     @classmethod
-    def from_namespace(cls, arg: Namespace, files: list[str]):
+    def from_namespace(cls, arg: Namespace, files: tuple[Path, ...]):
         return cls(
             num_batches = arg.num_batches,
             num_processes = arg.num_processes,
@@ -65,7 +66,7 @@ class PicklesManager:
             results = p.imap_unordered(
                 self.batch_job, batch_args
             )
-            _ = [*results]
+            deque(results, 0) # consume iterator
         
         worker_listener.stop()
 
