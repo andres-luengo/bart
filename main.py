@@ -156,6 +156,7 @@ def get_file_names(file: TextIOWrapper) -> tuple[Path, ...]:
 def main():
     args = parse_args()
     make_outdir(args)
+    logging_setup(args)
     files = get_file_names(args.infile)
     manager = PicklesManager.from_namespace(args, files)
     manager.run()
