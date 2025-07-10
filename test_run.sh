@@ -1,1 +1,0 @@
-echo "~/breakthrough-listen/data/blc40_guppi_59358_40991_HIP3740_0031.rawspec.0000.h5" | python main.py -vv -f --num-batches 1 - test
