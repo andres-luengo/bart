@@ -16,7 +16,7 @@ from collections import deque
 class PicklesManager:
     def __init__(self, num_batches: int, num_processes: int, files: tuple[Path, ...], outdir: Path):
         self._num_processes = num_processes
-        self._batches = [files[i::num_batches] for i in range(num_batches)]
+        self._batches: tuple[tuple[Path, ...], ...] = tuple(files[i::num_batches] for i in range(num_batches))
         self._outdir = outdir
         self._logger = logging.getLogger(__name__)
 
@@ -37,9 +37,16 @@ class PicklesManager:
         logger.addHandler(handler)
     
     @staticmethod
-    def batch_job(args: tuple[Path, list[str], int]):
-        job = PickleJob(*args)
-        return job.run()
+    def batch_job(args: tuple[Path, tuple[Path, ...], int]):
+        try:
+            job = PickleJob(*args)
+            return job.run()
+        except Exception as e:
+            id: int = args[-1]
+            logging.critical(
+                f'EXCEPTION ON BATCH {id:<03}', 
+                exc_info = True, stack_info = True
+            )
     
     def run(self):
         self._logger.info('Starting jobs...')
