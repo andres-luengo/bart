@@ -1,10 +1,12 @@
 import argparse
 import pathlib
 
-from pickle_manager import PicklesManager
+from manager import PicklesManager
 
 import logging, logging.handlers
 import shutil
+
+from io import TextIOWrapper
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -140,10 +142,14 @@ def logging_setup(args: argparse.Namespace):
     logger.addHandler(err_file_handler)
     logger.setLevel(logging.DEBUG)
 
+def get_file_names(file: TextIOWrapper):
+    return file.read().strip().splitlines()
+
 def main():
     args = parse_args()
     make_outdir(args)
-    manager = PicklesManager.from_namespace(args)
+    files = get_file_names(args.infile)
+    manager = PicklesManager.from_namespace(args, files)
     manager.run()
 
 if __name__ == '__main__': main()

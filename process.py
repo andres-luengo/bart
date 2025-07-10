@@ -1,14 +1,17 @@
 import numpy as np
 import pandas as pd
 
-import pathlib
+from pathlib import Path
 
 import logging
+
+from threading import Thread
+from queue import Queue, ShutDown
 
 class PickleJob:
     def __init__(
             self, 
-            outdir: pathlib.Path, 
+            outdir: Path, 
             batch: list[str], 
             batch_num: int = -1,
     ):
@@ -27,4 +30,10 @@ class PickleJob:
         self.feature_table.to_csv(self.save_path, index = False)
     
     def run(self):
+        self._logger.info(f'Running on batch {self.batch}')
         return self.feature_table
+
+def save_thread(data_queue: Queue):
+    data_buffer = []
+    while True:
+        

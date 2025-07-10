@@ -1,34 +1,30 @@
-from pickle_job import PickleJob
+from process import PickleJob
 
 from argparse import Namespace
 from io import TextIOWrapper
+from pathlib import Path
 
 from multiprocessing import Pool, Manager, Queue
 
 import logging, logging.handlers
-import os
 
 # splits up files into batches
 # does multiprocessing stuff
 # manages file nonsense
 # manages resources
 class PicklesManager:
-    def __init__(self, num_batches: int, num_processes: int, files: list[str], outdir: TextIOWrapper):
+    def __init__(self, num_batches: int, num_processes: int, files: list[str], outdir: Path):
         self._num_processes = num_processes
         self._batches = [files[i::num_batches] for i in range(num_batches)]
         self._outdir = outdir
         self._logger = logging.getLogger(__name__)
-    
-    @staticmethod
-    def get_file_list(file: TextIOWrapper) -> list[str]:
-        return file.read().strip().splitlines()
 
     @classmethod
-    def from_namespace(cls, arg: Namespace):
+    def from_namespace(cls, arg: Namespace, files: list[str]):
         return cls(
             num_batches = arg.num_batches,
             num_processes = arg.num_processes,
-            files = cls.get_file_list(arg.infile),
+            files = files,
             outdir = arg.outdir
         )
     
@@ -40,12 +36,18 @@ class PicklesManager:
         logger.addHandler(handler)
     
     @staticmethod
-    def batch_job(batch: list[str]):
-        job = PickleJob(batch)
+    def batch_job(args: tuple[Path, list[str], int]):
+        job = PickleJob(*args)
         return job.run()
     
     def run(self):
         self._logger.info('Starting jobs...')
+
+        batch_args = (
+            (self._outdir, batch, i)
+            for i, batch in enumerate(self._batches)
+        )
+
         log_queue = Manager().Queue()
         worker_listener = logging.handlers.QueueListener(
             log_queue,
@@ -61,12 +63,22 @@ class PicklesManager:
         ) as p:
             # using this over map so that if anything raises it gets sent up ASAP
             results = p.imap_unordered(
-                self.batch_job, self._batches
+                self.batch_job, batch_args
             )
-            [*results]
+            _ = [*results]
         
         worker_listener.stop()
 
 
 # *like.
-# very_normal_ok_function(EXPLODE_ORPHANAGE = False) # otherwise orphanage explodes
+# def very_normal_function(normal_parameter: float, explode_orphanage: bool = True):
+#     """
+#     Totally normal function. Gives you the square of normal_parameter
+    
+#     Args:
+#     - normal_parameter: parameter to square
+#     - explode_orphanage: whether to explode an orphanage. defaults to true
+#     """
+#     if explode_orphanage:
+#         nuclear_bomb.explode('orphanage')
+#     return normal_parameter ** 2
