@@ -83,7 +83,7 @@ class PicklesManager:
         worker_listener = logging.handlers.QueueListener(
             log_queue,
             *logging.getLogger().handlers,
-            respect_handler_level = True # WHY IS THIS NOT THE DEFAULT*????????????????????
+            respect_handler_level = True
         )
         worker_listener.start()
 
@@ -99,17 +99,3 @@ class PicklesManager:
             for _ in results: pass # consume lazy map
         
         worker_listener.stop()
-
-
-# *like.
-# def very_normal_function(normal_parameter: float, explode_orphanage: bool = True):
-#     """
-#     Totally normal function. Gives you the square of normal_parameter
-    
-#     Args:
-#     - normal_parameter: parameter to square
-#     - explode_orphanage: whether to explode an orphanage. defaults to true
-#     """
-#     if explode_orphanage:
-#         nuclear_bomb.explode('orphanage')
-#     return normal_parameter ** 2
