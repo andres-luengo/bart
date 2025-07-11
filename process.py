@@ -81,13 +81,8 @@ class FileJob:
             : # all frequency bins
         ]
 
-        self._logger.debug(f'Starting with {self._num_even_frequency_blocks} blocks.')
-
         warm_indices = self.get_warm_indices(test_strip)
-        self._logger.debug(f'Got {len(warm_indices)} warm indices.')
-
         hot_indices = self.get_hot_indices(test_strip, warm_indices)
-        self._logger.debug(f'Got {len(hot_indices)} hot indices.')
 
         return hot_indices
 
