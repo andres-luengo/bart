@@ -12,6 +12,8 @@ import logging
 
 from typing import Any
 
+import time
+
 HIT_COLUMNS = ('frequency', 'kurtosis',) # sure
 
 # things to think about:
@@ -68,9 +70,12 @@ class FileJob:
         self._num_frequency_blocks = self._num_even_frequency_blocks * 2 - 1
     
     def run(self):
+        start_time = time.perf_counter()
         filtered_block_l_indices = self.filter_blocks()
         hits = self.get_hits(filtered_block_l_indices)
         df = pd.DataFrame(hits)
+        end_time = time.perf_counter()
+        self._logger.debug(f'Done! Took {end_time - start_time:.3g}s')
         return df
     
     def filter_blocks(self) -> np.ndarray:
