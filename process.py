@@ -63,7 +63,9 @@ class FileJob:
         self._frequency_window_size = process_params['freq_window']
         self._warm_significance = process_params['warm_significance']
         self._hot_significance = process_params['hot_significance']
-        self._num_frequency_blocks = int(np.ceil(self._data.shape[2] / self._frequency_window_size))
+        self._num_even_frequency_blocks = int(np.ceil(self._data.shape[2] / self._frequency_window_size))
+        # overlapping blocks; last even block doesn't get an odd block
+        self._num_frequency_blocks = self._num_even_frequency_blocks * 2 - 1
     
     def run(self):
         filtered_block_l_indices = self.filter_blocks()
@@ -79,10 +81,7 @@ class FileJob:
             : # all frequency bins
         ]
 
-        self._logger.debug(
-            f'Starting with {len(test_strip) // self._frequency_window_size} '
-            'blocks.'
-        )
+        self._logger.debug(f'Starting with {self._num_even_frequency_blocks} blocks.')
 
         warm_indices = self.get_warm_indices(test_strip)
         self._logger.debug(f'Got {len(warm_indices)} warm indices.')
@@ -94,9 +93,9 @@ class FileJob:
 
     def get_warm_indices(self, test_strip: np.ndarray):
         warm_indices = []
-        for i in range(self._num_frequency_blocks):
-            l_index = i * self._frequency_window_size
-            r_index = (i + 1) * self._frequency_window_size
+        for i in np.arange(0, self._num_even_frequency_blocks, 0.5):
+            l_index = int(i * self._frequency_window_size)
+            r_index = int((i + 1) * self._frequency_window_size)
             
             block_strip = test_strip[l_index:r_index]
             
