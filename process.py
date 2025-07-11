@@ -17,7 +17,6 @@ import time
 HIT_COLUMNS = ('frequency', 'kurtosis',) # sure
 
 # things to think about:
-# (!!!) overlapping windows
 # DC spikes
 # numba
 
