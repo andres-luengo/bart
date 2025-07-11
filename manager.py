@@ -36,7 +36,9 @@ class PicklesManager:
     def from_namespace(cls, arg: Namespace, files: tuple[Path, ...]):
         return cls(
             process_params = {
-                'freq_window' : arg.frequency_block_size
+                'freq_window' : arg.frequency_block_size,
+                'warm_significance' : arg.warm_significance,
+                'hot_significance' : arg.hot_significance
             },
             num_batches = arg.num_batches,
             num_processes = arg.num_processes,
@@ -62,6 +64,7 @@ class PicklesManager:
                 f'EXCEPTION ON BATCH {id:<03}', 
                 exc_info = True, stack_info = True
             )
+            raise e
     
     def run(self):
         self._logger.info('Starting jobs...')

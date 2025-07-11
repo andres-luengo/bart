@@ -32,11 +32,6 @@ def parse_args() -> argparse.Namespace:
         action = 'store_true',
         help = 'If present and outdir already exists, it will be overwritten.'
     )
-    io_group.add_argument(
-        '--no-verify',
-        action = 'store_true',
-        help = 'If present, errors out if any of the paths passed into infile do not exist.'
-    )
 
     processing_group = parser.add_argument_group('Processing')
     processing_group.add_argument(
@@ -44,6 +39,25 @@ def parse_args() -> argparse.Namespace:
         type = int,
         help = 'Each scan is broken up into frequency blocks of this size before computing statistics.',
         default = 1024 # this is what caleb uses
+    )
+    processing_group.add_argument(
+        '--warm-significance',
+        type = float,
+        help = (
+            'We first filter for blocks that have data points WARM_SIGNIFICANCE '
+            'sigma above the median along the middle time bins. Defaults to 5.0.'
+        ),
+        default = 5.0
+    )
+    processing_group.add_argument(
+        '--hot-significance',
+        type = float,
+        help = (
+            'A similar filter happens after the WARM_SIGNIFICANCE filter, '
+            'leaving in blocks that have data points at least HOT_SIGNIFICANCE median '
+            'absolute deviaions from the median. Defaults to 10.0'
+        ),
+        default = 10.0
     )
 
     resource_management_group = parser.add_argument_group('Resource Management')
