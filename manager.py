@@ -96,7 +96,7 @@ class PicklesManager:
             results = p.imap_unordered(
                 self.batch_job, batch_args
             )
-            deque(results, 0) # consume iterator
+            for _ in results: pass # consume lazy map
         
         worker_listener.stop()
 
