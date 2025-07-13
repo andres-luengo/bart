@@ -1,4 +1,4 @@
-from process import BatchJob
+from .process import BatchJob
 
 from argparse import Namespace
 from pathlib import Path

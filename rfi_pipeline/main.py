@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 
-from manager import Manager
+from .manager import Manager
 
 import logging, logging.handlers
 import shutil
