@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 
-from manager import PicklesManager
+from manager import Manager
 
 import logging, logging.handlers
 import shutil
@@ -11,10 +11,7 @@ import sys
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog = 'pickles-redux',
-        description = (
-            'pickles 2 :)'
-        )
+        prog = 'rfi-finder'
     )
     io_group = parser.add_argument_group('Input and Output')
     io_group.add_argument(
@@ -173,7 +170,7 @@ def main():
     make_outdir(args)
     logging_setup(args)
     files = get_file_names(args.infile)
-    manager = PicklesManager.from_namespace(args, files)
+    manager = Manager.from_namespace(args, files)
     manager.run()
 
 if __name__ == '__main__': main()

@@ -3,7 +3,7 @@ from process import BatchJob
 from argparse import Namespace
 from pathlib import Path
 
-from multiprocessing import Pool, Manager, Queue
+import multiprocessing as mp
 
 import logging, logging.handlers
 
@@ -15,7 +15,7 @@ from typing import Any
 # does multiprocessing stuff
 # manages file nonsense
 # manages resources
-class PicklesManager:
+class Manager:
     def __init__(
             self, 
             process_params: dict[str, Any],
@@ -47,7 +47,7 @@ class PicklesManager:
         )
     
     @staticmethod
-    def worker_init(log_queue: Queue):
+    def worker_init(log_queue: mp.Queue):
         handler = logging.handlers.QueueHandler(log_queue)
         logger = logging.getLogger()
         logger.handlers.clear()
@@ -79,7 +79,7 @@ class PicklesManager:
             for i, batch in enumerate(self.batches)
         )
 
-        log_queue = Manager().Queue()
+        log_queue = mp.Manager().Queue()
         worker_listener = logging.handlers.QueueListener(
             log_queue,
             *logging.getLogger().handlers,
@@ -87,7 +87,7 @@ class PicklesManager:
         )
         worker_listener.start()
 
-        with Pool(
+        with mp.Pool(
             processes=self.num_processes,
             initializer=self.worker_init,
             initargs=(log_queue,)
