@@ -16,8 +16,6 @@ import time
 
 import re
 
-HIT_COLUMNS = ('frequency', 'kurtosis',) # sure
-
 # things to think about:
 # DC spikes
 # numba
