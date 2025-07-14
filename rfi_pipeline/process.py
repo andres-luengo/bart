@@ -38,16 +38,19 @@ class BatchJob:
         self.batch_num = batch_num
 
         self.save_path = outdir / f'batch_{batch_num:>03}.csv'
-        self._logger.info(f'Creating {self.save_path}')
-        pd.DataFrame(columns = HIT_COLUMNS + ('source file',)).to_csv(self.save_path, index = False)
     
     def run(self):
         self._logger.info(f'Running on batch {self.batch_num}.')
         self._logger.debug(f'That is, {self.batch = }')
-        for file in self.batch:
+        for i, file in enumerate(self.batch):
             df = FileJob(file, self.process_params).run()
             df['source file'] = str(file)
-            df.to_csv(self.save_path, header = False, mode = 'a', index = False)
+            if i == 0:
+                keep_header = True
+                self._logger.info(f'Saving to {self.save_path}')
+            else:
+                keep_header = False
+            df.to_csv(self.save_path, header = keep_header, mode = 'a', index = False)
 
 # these are run serially within each process, but the OOP makes things neat
 class FileJob:
