@@ -11,7 +11,7 @@ import sys
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog = 'rfi-finder'
+        prog = 'rfi-pipeline'
     )
     io_group = parser.add_argument_group('Input and Output')
     io_group.add_argument(
