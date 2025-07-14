@@ -14,6 +14,8 @@ from typing import Any
 
 import time
 
+import re
+
 HIT_COLUMNS = ('frequency', 'kurtosis',) # sure
 
 # things to think about:
@@ -50,7 +52,15 @@ class BatchJob:
 # these are run serially within each process, but the OOP makes things neat
 class FileJob:
     def __init__(self, file: Path, process_params: dict[str, Any]):
-        self._logger = logging.getLogger(f'{__name__} ({file})')
+        m = re.search(r'\/([^\/]+)$', str(file))
+        if m:
+            short_file = m.group(1)
+        else:
+            short_file = file
+        self._logger = logging.getLogger(f'{__name__} ({short_file})')
+        
+        if not m:
+            self._logger.warning(f'Got a weird file name: {file}')
 
         self._file = h5py.File(file)
         self._data: h5py.Dataset = self._file['data'] #type: ignore
