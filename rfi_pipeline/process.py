@@ -61,6 +61,9 @@ class FileJob:
         
         if not m:
             self._logger.warning(f'Got a weird file name: {file}')
+        
+        if 'spliced' in str(file):
+            raise NotImplementedError('Spliced files are not supported.')
 
         self._file = h5py.File(file)
         self._data: h5py.Dataset = self._file['data'] #type: ignore
