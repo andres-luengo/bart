@@ -195,13 +195,11 @@ class FileJob:
                 freq_array, 
                 slice_data, 
                 p0=[
-                    self._foff,
                     freq_array[np.argmax(slice_data)], 
                     np.max(slice_data) - np.median(slice_data),
                     np.median(slice_data)
                 ],
                 bounds=np.array([
-                    (-np.inf, np.inf),
                     (freq_array[-1], freq_array[0]),
                     (5 * np.std(slice_data), np.inf),
                     (0, np.inf)
