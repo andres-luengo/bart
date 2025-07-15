@@ -260,14 +260,14 @@ class FileJob:
                 np.max(slice_data) - np.median(slice_data),
                 np.median(slice_data)
             ],
-            # # slow, screws up scale for some signals
-            # bounds=np.array([
-            #     (freq_array[-1], freq_array[0]),
-            #     (0, np.inf),
-            #     (0, np.inf),
-            #     (0, np.inf)
-            # ]).T,
-            # max_nfev=10_000
+            # slow, screws up scale for some signals
+            bounds=np.array([
+                (freq_array[-1], freq_array[0]),
+                (0, np.inf),
+                (np.median(slice_data)/2, np.inf),
+                (0, np.inf)
+            ]).T,
+            max_nfev=10_000
         )
 
     def index_to_frequency(self, index: int):
