@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-import scipy.stats
+import scipy
 
 from pathlib import Path
 
@@ -15,6 +15,10 @@ from typing import Any
 import time
 
 import re
+
+import warnings
+
+import scipy.optimize
 
 # things to think about:
 # DC spikes
@@ -111,6 +115,7 @@ class FileJob:
             r_index = int((i + 1) * self._frequency_window_size)
             
             block_strip = test_strip[l_index:r_index]
+            self.smooth_dc_spike(block_strip, l_idx=l_index)
             
             if (np.max(block_strip) - np.median(block_strip)) > (self._warm_significance * np.std(block_strip)):
                 warm_indices.append(l_index)
@@ -132,25 +137,34 @@ class FileJob:
         return np.array(hot_indices)
     
 
-    def smooth_dc_spike(self, block: np.ndarray, l_idx: int):
+    def smooth_dc_spike(self, block: np.ndarray, l_idx: int, axis: int = -1):
         """
-        If there is a DC spike in `block`, replaces it with the average of the values to the left and right of it.
-        Otherwise, does nothing.
-        Modifies `block`
+        If there is a DC spike in `block`, replaces it with the average of the values to the left and right of it
+        along the specified frequency axis. Otherwise, does nothing. Modifies `block` in place.
         """
         FINE_PER_COARSE = 1_048_576
         r_idx = l_idx + self._frequency_window_size
-        
+
         r_to_spike = (r_idx + (FINE_PER_COARSE // 2)) % FINE_PER_COARSE
-        
-        # (if r_to_spike is 0, the spike is really at the first bin of the next block, 
-        # and that'll have r_to_spike == self._frequency_window_size)
-        if r_to_spike == 0 or r_to_spike > self._frequency_window_size: 
+
+        if r_to_spike == 0 or r_to_spike > self._frequency_window_size:
             return
-        
-        # gotcha: if there is a spike at index 0, this uses a value at the end of the block. this is probably fine anyway.
+
         spike_idx = (r_idx - r_to_spike) - l_idx
-        block[:, spike_idx] = (block[:, spike_idx - 1] + block[:, spike_idx + 1])/2
+
+        # Prepare slices for all axes
+        slicer = [slice(None)] * block.ndim
+        slicer_left = slicer.copy()
+        slicer_right = slicer.copy()
+        slicer_spike = slicer.copy()
+
+        slicer_left[axis] = spike_idx - 1
+        slicer_right[axis] = spike_idx + 1
+        slicer_spike[axis] = spike_idx
+
+        block[tuple(slicer_spike)] = (
+            block[tuple(slicer_left)] + block[tuple(slicer_right)]
+        ) / 2
     
     def get_hits(self, block_l_indices: np.ndarray) -> list[dict[str, Any]]:
         rows = []
@@ -158,7 +172,7 @@ class FileJob:
             left = block_l_index
             right = block_l_index + self._frequency_window_size
 
-            flags = ''
+            flags = []
 
             freq_array = np.linspace(
                 self._fch1 + left * self._foff,
@@ -169,37 +183,41 @@ class FileJob:
             block = self._data[:, 0, left:right]
             self.smooth_dc_spike(block, block_l_index)
             
-            try:
-                params, _ = self.fit_frequency_gaussians(freq_array, block)
-            except (RuntimeError, ValueError):
-                self._logger.warning(
-                    f'Got an exception while handling block with l_index of {block_l_index}.', 
-                    exc_info=True, stack_info=False
-                )
-                snr = width = np.nan
-                flags += 'fit_error'
-            else:
-                stds = params[:, 1]
-                amps = params[:, 2]
-                noises = params[:, 3]
-
-                width = 2.355 * np.mean(stds)
-                snr = (amps / noises).mean()
-
+            params, _ = self.fit_frequency_gaussians(freq_array, block)
             
+            # Count NaN fits
+            nan_mask = np.isnan(params).any(axis=1)
+            num_nan_fits = np.sum(nan_mask)
+            
+            if num_nan_fits > 0:
+                flags.append(f'nan fits: {num_nan_fits}')
+            
+            # Calculate statistics using only non-NaN values
+            valid_mask = ~nan_mask
+            if np.any(valid_mask):
+                means = params[valid_mask, 0]
+                stds = params[valid_mask, 1]
+                amps = params[valid_mask, 2]
+                noises = params[valid_mask, 3]
+
+                mean = np.mean(means)
+                width = 2.355 * np.mean(stds) # stdev to FWHM
+                snr = (amps / noises).mean()
+            else:
+                mean = snr = width = np.nan
+                # consider just dropping the block at this point tbh
 
             # need it so kurtosis doesn't blow up
             block_normalized = (block - np.mean(block)) / np.std(block)
             kurtosis = scipy.stats.kurtosis(block_normalized.flat)
 
-
             rows.append({
                 'frequency_index': block_l_index,
-                'frequency': self.index_to_frequency((left + right) / 2),
+                'frequency': mean,
                 'kurtosis': kurtosis,
                 'snr': snr,
                 'width': width,
-                'flags': flags
+                'flags': '|'.join(flag.replace('|', '') for flag in flags)
             })
         return rows
     
@@ -211,38 +229,46 @@ class FileJob:
     def fit_frequency_gaussians(self, freq_array: np.ndarray, block: np.ndarray):
         """
         Fits a Gaussian to each frequency slice of the block.
-        Returns parameters and covariance for each slice, with dimensions (num_slices, 4) and (num_slices, 4, 4)."""
+        Returns parameters and covariance for each slice, with dimensions (num_slices, 4) and (num_slices, 4, 4).
+        Failed fits result in NaN parameters for that slice."""
         all_params = []
         all_covs = []
         for i in range(block.shape[0]):
             slice_data = block[i, :]
             try:
-                params, cov = scipy.optimize.curve_fit(
-                    self.signal_model, 
-                    freq_array, 
-                    slice_data, 
-                    p0=[
-                        freq_array[np.argmax(slice_data)], 
-                        np.abs(self._foff),
-                        np.max(slice_data) - np.median(slice_data),
-                        np.median(slice_data)
-                    ],
-                    # bounds=np.array([
-                    #     (freq_array[-1], freq_array[0]),
-                    #     (0, np.inf),
-                    #     (0, np.inf),
-                    #     (0, np.inf)
-                    # ]).T,
-                    # max_nfev=10_000
-                )
-            except (RuntimeError, ValueError) as e:
-                exc_type = type(e)
-                raise exc_type(f'Got an error while fitting Gaussians to time slice {i}.') from e
+                with warnings.catch_warnings():
+                    warnings.filterwarnings('error')
+                    params, cov = self.fit_gaussian_to_slice(freq_array, slice_data)
+            except (RuntimeError, ValueError, scipy.optimize.OptimizeWarning):
+                # Return NaN parameters for failed fits
+                params = np.full((4,), np.nan)
+                cov = np.full((4, 4), np.nan)
             all_params.append(params)
             all_covs.append(cov)
         params = np.array(all_params)
         covs = np.array(all_covs)
         return params, covs
+    
+    def fit_gaussian_to_slice(self, freq_array: np.ndarray, slice_data: np.ndarray):
+        return scipy.optimize.curve_fit(
+            self.signal_model, 
+            freq_array, 
+            slice_data, 
+            p0=[
+                freq_array[np.argmax(slice_data)], 
+                np.abs(self._foff),
+                np.max(slice_data) - np.median(slice_data),
+                np.median(slice_data)
+            ],
+            # # slow, screws up scale for some signals
+            # bounds=np.array([
+            #     (freq_array[-1], freq_array[0]),
+            #     (0, np.inf),
+            #     (0, np.inf),
+            #     (0, np.inf)
+            # ]).T,
+            # max_nfev=10_000
+        )
 
     def index_to_frequency(self, index: int):
         return self._fch1 + index * self._foff
