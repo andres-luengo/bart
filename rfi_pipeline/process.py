@@ -185,14 +185,12 @@ class FileJob:
             
             params, _ = self.fit_frequency_gaussians(freq_array, block)
             
-            # Count NaN fits
             nan_mask = np.isnan(params).any(axis=1)
             num_nan_fits = np.sum(nan_mask)
             
             if num_nan_fits > 0:
                 flags.append(f'nan fits: {num_nan_fits}')
             
-            # Calculate statistics using only non-NaN values
             valid_mask = ~nan_mask
             if np.any(valid_mask):
                 means = params[valid_mask, 0]
@@ -205,6 +203,7 @@ class FileJob:
                 snr = (amps / noises).mean()
             else:
                 mean = snr = width = np.nan
+                flags.append(f'no valid fits')
                 # consider just dropping the block at this point tbh
 
             # need it so kurtosis doesn't blow up
