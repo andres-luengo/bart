@@ -132,7 +132,7 @@ class FileJob:
         return np.array(hot_indices)
     
 
-    def smooth_dc_spike(self, freq_array: np.ndarray, block: np.ndarray, l_idx: int):
+    def smooth_dc_spike(self, block: np.ndarray, l_idx: int):
         """
         If there is a DC spike in `block`, replaces it with the average of the values to the left and right of it.
         Otherwise, does nothing.
@@ -143,7 +143,9 @@ class FileJob:
         
         r_to_spike = (r_idx + (FINE_PER_COARSE // 2)) % FINE_PER_COARSE
         
-        if r_to_spike > self._frequency_window_size: 
+        # (if r_to_spike is 0, the spike is really at the first bin of the next block, 
+        # and that'll have r_to_spike == self._frequency_window_size)
+        if r_to_spike == 0 or r_to_spike > self._frequency_window_size: 
             return
         
         # gotcha: if there is a spike at index 0, this uses a value at the end of the block. this is probably fine anyway.
@@ -163,7 +165,8 @@ class FileJob:
             )
 
             block = self._data[:, 0, left:right]
-            self.smooth_dc_spike(freq_array, block, block_l_index)
+            self.smooth_dc_spike(block, block_l_index)
+            self.fit_frequency_gaussians(freq_array, block)
 
             # need it so kurtosis doesn't blow up
             block_normalized = (block - np.mean(block)) / np.std(block)
