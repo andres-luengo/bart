@@ -11,6 +11,8 @@ from collections import deque
 
 from typing import Any
 
+import resource
+
 # splits up files into batches
 # does multiprocessing stuff
 # manages file nonsense
@@ -22,7 +24,8 @@ class Manager:
             num_batches: int, 
             num_processes: int, 
             files: tuple[Path, ...], 
-            outdir: Path
+            outdir: Path,
+            max_rss: int
     ):
         self.process_params = process_params
         self.num_processes = num_processes
@@ -31,6 +34,7 @@ class Manager:
         )
         self.outdir = outdir
         self._logger = logging.getLogger(__name__)
+        self.max_rss = max_rss
 
     @classmethod
     def from_namespace(cls, arg: Namespace, files: tuple[Path, ...]):
@@ -40,18 +44,21 @@ class Manager:
                 'warm_significance' : arg.warm_significance,
                 'hot_significance' : arg.hot_significance
             },
-            num_batches = arg.num_batches,
-            num_processes = arg.num_processes,
-            files = files,
-            outdir = arg.outdir
+            num_batches=arg.num_batches,
+            num_processes=arg.num_processes,
+            files=files,
+            outdir=arg.outdir,
+            max_rss=arg.max_rss_gb * 1e9
         )
     
     @staticmethod
-    def worker_init(log_queue: mp.Queue):
+    def worker_init(log_queue: mp.Queue, max_memory: int):
         handler = logging.handlers.QueueHandler(log_queue)
         logger = logging.getLogger()
         logger.handlers.clear()
         logger.addHandler(handler)
+
+        resource.setrlimit(resource.RLIMIT_AS, (max_memory, max_memory))
     
     @staticmethod
     def batch_job(args: tuple[dict[str, Any], Path, tuple[Path, ...], int]):
@@ -90,7 +97,10 @@ class Manager:
         with mp.Pool(
             processes=self.num_processes,
             initializer=self.worker_init,
-            initargs=(log_queue,)
+            initargs=(
+                log_queue, 
+                int(self.max_rss // self.num_processes)
+            )
         ) as p:
             # using this over map so that if anything raises it gets sent up ASAP
             results = p.imap_unordered(

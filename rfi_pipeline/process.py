@@ -158,7 +158,7 @@ class FileJob:
             left = block_l_index
             right = block_l_index + self._frequency_window_size
 
-            flags = 'fit-error'
+            flags = ''
 
             freq_array = np.linspace(
                 self._fch1 + left * self._foff,
@@ -177,6 +177,7 @@ class FileJob:
                     exc_info=True, stack_info=False
                 )
                 snr = width = np.nan
+                flags += 'fit_error'
             else:
                 stds = params[:, 1]
                 amps = params[:, 2]
@@ -184,6 +185,8 @@ class FileJob:
 
                 width = 2.355 * np.mean(stds)
                 snr = (amps / noises).mean()
+
+            
 
             # need it so kurtosis doesn't blow up
             block_normalized = (block - np.mean(block)) / np.std(block)
@@ -195,7 +198,8 @@ class FileJob:
                 'frequency': self.index_to_frequency((left + right) / 2),
                 'kurtosis': kurtosis,
                 'snr': snr,
-                'width': width
+                'width': width,
+                'flags': flags
             })
         return rows
     
@@ -219,16 +223,17 @@ class FileJob:
                     slice_data, 
                     p0=[
                         freq_array[np.argmax(slice_data)], 
-                        self._foff,
+                        np.abs(self._foff),
                         np.max(slice_data) - np.median(slice_data),
                         np.median(slice_data)
                     ],
-                    bounds=np.array([
-                        (freq_array[-1], freq_array[0]),
-                        (-np.inf, np.inf),
-                        (0, np.inf),
-                        (0, np.inf)
-                    ]).T
+                    # bounds=np.array([
+                    #     (freq_array[-1], freq_array[0]),
+                    #     (0, np.inf),
+                    #     (0, np.inf),
+                    #     (0, np.inf)
+                    # ]).T,
+                    # max_nfev=10_000
                 )
             except (RuntimeError, ValueError) as e:
                 exc_type = type(e)
