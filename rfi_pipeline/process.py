@@ -178,7 +178,7 @@ class FileJob:
         return rows
     
     @staticmethod
-    def signal_model(x, stdev, mean, amplitude, noise):
+    def signal_model(x, mean, stdev, amplitude, noise):
         exponent = -0.5 * ((x - mean) / stdev)**2
         return noise + amplitude * np.exp(exponent)
 
@@ -196,11 +196,13 @@ class FileJob:
                 slice_data, 
                 p0=[
                     freq_array[np.argmax(slice_data)], 
+                    self._foff,
                     np.max(slice_data) - np.median(slice_data),
                     np.median(slice_data)
                 ],
                 bounds=np.array([
                     (freq_array[-1], freq_array[0]),
+                    (-np.inf, np.inf),
                     (5 * np.std(slice_data), np.inf),
                     (0, np.inf)
                 ]).T
