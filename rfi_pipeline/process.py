@@ -131,23 +131,88 @@ class FileJob:
                 hot_indices.append(l_index)
         return np.array(hot_indices)
     
+
+    def smooth_dc_spike(self, freq_array: np.ndarray, block: np.ndarray, l_idx: int):
+        """
+        If there is a DC spike in `block`, replaces it with the average of the values to the left and right of it.
+        Otherwise, does nothing.
+        Modifies `block`
+        """
+        FINE_PER_COARSE = 1_048_576
+        r_idx = l_idx + self._frequency_window_size
+        
+        r_to_spike = (r_idx + (FINE_PER_COARSE // 2)) % FINE_PER_COARSE
+        
+        if r_to_spike > self._frequency_window_size: 
+            return
+        
+        # gotcha: if there is a spike at index 0, this uses a value at the end of the block. this is probably fine anyway.
+        spike_idx = (r_idx - r_to_spike) - l_idx
+        block[:, spike_idx] = (block[:, spike_idx - 1] + block[:, spike_idx + 1])/2
+    
     def get_hits(self, block_l_indices: np.ndarray) -> list[dict[str, Any]]:
         rows = []
         for block_l_index in block_l_indices:
             left = block_l_index
             right = block_l_index + self._frequency_window_size
 
-            block = self._data[:, 0, left:right]
+            freq_array = np.linspace(
+                self._fch1 + left * self._foff,
+                self._fch1 + right * self._foff,
+                num = right - left + 1
+            )
 
-            # otherwise 
+            block = self._data[:, 0, left:right]
+            self.smooth_dc_spike(freq_array, block, block_l_index)
+
+            # need it so kurtosis doesn't blow up
             block_normalized = (block - np.mean(block)) / np.std(block)
+            kurtosis = scipy.stats.kurtosis(block_normalized)
+
 
             rows.append({
+                'frequency_index': block_l_index,
                 'frequency': self.index_to_frequency((left + right) / 2),
-                'kurtosis': scipy.stats.kurtosis(block_normalized.flat)
+                'kurtosis': kurtosis
             })
         return rows
     
+    @staticmethod
+    def signal_model(x, stdev, mean, amplitude, noise):
+        exponent = -0.5 * ((x - mean) / stdev)**2
+        return noise + amplitude * np.exp(exponent)
+
+    def fit_frequency_gaussians(self, freq_array: np.ndarray, block: np.ndarray):
+        """
+        Fits a Gaussian to each frequency slice of the block.
+        Returns parameters and covariance for each slice, with dimensions (num_slices, 4) and (num_slices, 4, 4)."""
+        all_params = []
+        all_covs = []
+        for i in range(block.shape[0]):
+            slice_data = block[i, :]
+            params, cov = scipy.optimize.curve_fit(
+                self.signal_model, 
+                freq_array, 
+                slice_data, 
+                p0=[
+                    self._foff,
+                    freq_array[np.argmax(slice_data)], 
+                    np.max(slice_data) - np.median(slice_data),
+                    np.median(slice_data)
+                ],
+                bounds=np.array([
+                    (-np.inf, np.inf),
+                    (freq_array[-1], freq_array[0]),
+                    (5 * np.std(slice_data), np.inf),
+                    (0, np.inf)
+                ]).T
+            )
+            all_params.append(params)
+            all_covs.append(cov)
+        params = np.array(all_params)
+        covs = np.array(all_covs)
+        return params, covs
+
     def index_to_frequency(self, index: int):
         return self._fch1 + index * self._foff
 
