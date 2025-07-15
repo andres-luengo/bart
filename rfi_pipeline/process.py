@@ -158,25 +158,44 @@ class FileJob:
             left = block_l_index
             right = block_l_index + self._frequency_window_size
 
+            flags = 'fit-error'
+
             freq_array = np.linspace(
                 self._fch1 + left * self._foff,
                 self._fch1 + right * self._foff,
-                num = right - left + 1
+                num = right - left
             )
 
             block = self._data[:, 0, left:right]
             self.smooth_dc_spike(block, block_l_index)
-            self.fit_frequency_gaussians(freq_array, block)
+            
+            try:
+                params, _ = self.fit_frequency_gaussians(freq_array, block)
+            except (RuntimeError, ValueError):
+                self._logger.warning(
+                    f'Got an exception while handling block with l_index of {block_l_index}.', 
+                    exc_info=True, stack_info=False
+                )
+                snr = width = np.nan
+            else:
+                stds = params[:, 1]
+                amps = params[:, 2]
+                noises = params[:, 3]
+
+                width = 2.355 * np.mean(stds)
+                snr = (amps / noises).mean()
 
             # need it so kurtosis doesn't blow up
             block_normalized = (block - np.mean(block)) / np.std(block)
-            kurtosis = scipy.stats.kurtosis(block_normalized)
+            kurtosis = scipy.stats.kurtosis(block_normalized.flat)
 
 
             rows.append({
                 'frequency_index': block_l_index,
                 'frequency': self.index_to_frequency((left + right) / 2),
-                'kurtosis': kurtosis
+                'kurtosis': kurtosis,
+                'snr': snr,
+                'width': width
             })
         return rows
     
@@ -193,23 +212,27 @@ class FileJob:
         all_covs = []
         for i in range(block.shape[0]):
             slice_data = block[i, :]
-            params, cov = scipy.optimize.curve_fit(
-                self.signal_model, 
-                freq_array, 
-                slice_data, 
-                p0=[
-                    freq_array[np.argmax(slice_data)], 
-                    self._foff,
-                    np.max(slice_data) - np.median(slice_data),
-                    np.median(slice_data)
-                ],
-                bounds=np.array([
-                    (freq_array[-1], freq_array[0]),
-                    (-np.inf, np.inf),
-                    (5 * np.std(slice_data), np.inf),
-                    (0, np.inf)
-                ]).T
-            )
+            try:
+                params, cov = scipy.optimize.curve_fit(
+                    self.signal_model, 
+                    freq_array, 
+                    slice_data, 
+                    p0=[
+                        freq_array[np.argmax(slice_data)], 
+                        self._foff,
+                        np.max(slice_data) - np.median(slice_data),
+                        np.median(slice_data)
+                    ],
+                    bounds=np.array([
+                        (freq_array[-1], freq_array[0]),
+                        (-np.inf, np.inf),
+                        (0, np.inf),
+                        (0, np.inf)
+                    ]).T
+                )
+            except (RuntimeError, ValueError) as e:
+                exc_type = type(e)
+                raise exc_type(f'Got an error while fitting Gaussians to time slice {i}.') from e
             all_params.append(params)
             all_covs.append(cov)
         params = np.array(all_params)

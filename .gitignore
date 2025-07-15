@@ -178,7 +178,7 @@ Thumbs.db
 # Project specific
 # Test data and results (keeping the structure but not the data)
 test/batches/*.csv
-test/logs/*.log
+test/logs/*.log*
 test/data/
 *.h5
 *.fil
