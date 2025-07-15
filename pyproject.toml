@@ -57,7 +57,7 @@ Repository = "https://github.com/breakthrough-listen/rfi-pipeline"
 "Bug Tracker" = "https://github.com/breakthrough-listen/rfi-pipeline/issues"
 
 [project.scripts]
-rfi-pipeline = "rfi_pipeline.main:main"
+rfi-pipeline = "rfi_pipeline.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
