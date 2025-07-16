@@ -198,9 +198,21 @@ class FileJob:
                 amps = params[valid_mask, 2]
                 noises = params[valid_mask, 3]
 
+                snrs = (amps + noises) / noises
+
                 mean = np.mean(means)
                 width = 2.355 * np.mean(stds) # stdev to FWHM
-                snr = (amps / noises).mean()
+                snr = np.mean(snrs)
+
+                if (
+                    len(snrs) < 4
+                    or (
+                        np.max(snrs) - np.median(snrs) 
+                        > 10 * scipy.stats.median_abs_deviation(snrs)
+                    )
+                ):
+                    flags.append('blip')
+
             else:
                 mean = snr = width = np.nan
                 flags.append(f'no valid fits')
@@ -263,7 +275,7 @@ class FileJob:
             bounds=np.array([
                 (freq_array[-1], freq_array[0]),
                 (0, np.inf),
-                (np.median(slice_data)/2, np.inf),
+                (np.median(slice_data) * 0.25, np.inf),
                 (0, np.inf)
             ]).T,
             max_nfev=10_000
