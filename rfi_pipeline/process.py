@@ -82,10 +82,14 @@ class FileJob:
         self._min_channel = 0
         if np.isfinite(process_params['max_freq']):
             self._min_channel = round((process_params['max_freq'] - self._fch1) / self._foff)
+            self._min_channel = max(self._min_channel, 0)
 
         self._max_channel = self._data.shape[2]
         if np.isfinite(process_params['min_freq']):
             self._max_channel = round((process_params['min_freq'] - self._fch1) / self._foff)
+            self._max_channel = min(self._max_channel, self._data.shape[2])
+
+        self._logger.debug(f'Running on {self._max_channel - self._min_channel} channels, {(self._max_channel - self._min_channel) / self._data.shape[2]:.2%} of the data.')
                 
         self._frequency_window_size = process_params['freq_window']
         self._warm_significance = process_params['warm_significance']
@@ -121,9 +125,9 @@ class FileJob:
         Returns data indices (i.e. don't index into test_strip directly with these)
         """
         warm_indices = []
-        for i in np.arange(0, self._num_even_frequency_blocks, 0.5):
-            l_index = int(i * self._frequency_window_size)
-            r_index = int((i + 1) * self._frequency_window_size)
+        for i in range(self._num_frequency_blocks):
+            l_index = int(i * self._frequency_window_size/2)
+            r_index = l_index + self._frequency_window_size
             
             block_strip = test_strip[l_index:r_index]
             self.smooth_dc_spike(block_strip, l_idx=l_index)
