@@ -42,7 +42,9 @@ class Manager:
             process_params = {
                 'freq_window' : arg.frequency_block_size,
                 'warm_significance' : arg.warm_significance,
-                'hot_significance' : arg.hot_significance
+                'hot_significance' : arg.hot_significance,
+                'min_freq': arg.min_freq,
+                'max_freq': arg.max_freq
             },
             num_batches=arg.num_batches,
             num_processes=arg.num_processes,

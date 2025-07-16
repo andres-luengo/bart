@@ -78,11 +78,19 @@ class FileJob:
 
         self._logger.info(f'Opened {file}')
         self._logger.debug(f'...with header {dict(self._data.attrs)}')
+
+        self._min_channel = 0
+        if np.isfinite(process_params['max_freq']):
+            self._min_channel = round((process_params['max_freq'] - self._fch1) / self._foff)
+
+        self._max_channel = self._data.shape[2]
+        if np.isfinite(process_params['min_freq']):
+            self._max_channel = round((process_params['min_freq'] - self._fch1) / self._foff)
                 
         self._frequency_window_size = process_params['freq_window']
         self._warm_significance = process_params['warm_significance']
         self._hot_significance = process_params['hot_significance']
-        self._num_even_frequency_blocks = int(np.ceil(self._data.shape[2] / self._frequency_window_size))
+        self._num_even_frequency_blocks = int(np.ceil((self._max_channel - self._min_channel) / self._frequency_window_size))
         # overlapping blocks; last even block doesn't get an odd block
         self._num_frequency_blocks = self._num_even_frequency_blocks * 2 - 1
     
@@ -100,7 +108,7 @@ class FileJob:
         test_strip = self._data[
             self._data.shape[0] // 2, # middle time bin
             0, # drop instrument id dimension
-            : # all frequency bins
+            self._min_channel:self._max_channel
         ]
 
         warm_indices = self.get_warm_indices(test_strip)
@@ -109,6 +117,9 @@ class FileJob:
         return hot_indices
 
     def get_warm_indices(self, test_strip: np.ndarray):
+        """
+        Returns data indices (i.e. don't index into test_strip directly with these)
+        """
         warm_indices = []
         for i in np.arange(0, self._num_even_frequency_blocks, 0.5):
             l_index = int(i * self._frequency_window_size)
@@ -118,22 +129,26 @@ class FileJob:
             self.smooth_dc_spike(block_strip, l_idx=l_index)
             
             if (np.max(block_strip) - np.median(block_strip)) > (self._warm_significance * np.std(block_strip)):
-                warm_indices.append(l_index)
+                warm_indices.append(l_index + self._min_channel)
         
         return np.array(warm_indices)
 
     def get_hot_indices(self, test_strip: np.ndarray, warm_indices: np.ndarray):
+        """
+        Returns data indices (i.e. don't index into test_strip directly with these)
+        """
         hot_indices = []
         for warm_index in warm_indices:
-            l_index = warm_index
-            r_index = warm_index + self._frequency_window_size
+            warm_test_index = warm_index - self._min_channel
+            l_index = warm_test_index
+            r_index = warm_test_index + self._frequency_window_size
             strip = test_strip[l_index:r_index]
 
             if (
                 np.max(strip) - np.median(strip)
                 > self._hot_significance * scipy.stats.median_abs_deviation(strip)
             ):
-                hot_indices.append(l_index)
+                hot_indices.append(l_index + self._min_channel)
         return np.array(hot_indices)
     
 
@@ -150,7 +165,7 @@ class FileJob:
         if r_to_spike == 0 or r_to_spike > self._frequency_window_size:
             return
 
-        spike_idx = (r_idx - r_to_spike) - l_idx
+        spike_idx = self._frequency_window_size - r_to_spike 
 
         # Prepare slices for all axes
         slicer = [slice(None)] * block.ndim
@@ -216,6 +231,7 @@ class FileJob:
             else:
                 mean = snr = width = np.nan
                 flags.append(f'no valid fits')
+                self._logger.warning(f'Could not fit any Gaussians to block at {block_l_index}')
                 # consider just dropping the block at this point tbh
 
             # need it so kurtosis doesn't blow up

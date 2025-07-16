@@ -32,6 +32,18 @@ def parse_args() -> argparse.Namespace:
 
     processing_group = parser.add_argument_group('Processing')
     processing_group.add_argument(
+        '--min-freq',
+        type=float,
+        help='Frequency bins below this value are ignored. Defaults to -inf',
+        default=float('-inf')
+    )
+    processing_group.add_argument(
+        '--max-freq',
+        type=float,
+        help='Frequency bins above this value are ignored. Defaults to inf',
+        default=float('inf')
+    )
+    processing_group.add_argument(
         '--frequency-block-size',
         type = int,
         help = 'Each scan is broken up into frequency blocks of this size before computing statistics.',
