@@ -204,6 +204,15 @@ class FileJob:
     def get_hits(self, block_l_indices: np.ndarray) -> list[dict[str, Any]]:
         start_time = time.perf_counter()
 
+        # for <1000, generally fast enough to read in specific blocks
+        if len(block_l_indices) < 2**10:
+            data = self._data
+        # otherwise, i think its faster to just load in the whole thing (sorry RAM)
+        else:
+            # for some reason, using zeros_like or something like that loads in the entire dataset
+            data = np.full(self._data.shape, np.nan)
+            data[..., self._min_channel:self._max_channel] = self._data[..., self._min_channel:self._max_channel]
+
         rows = []
         for block_l_index in block_l_indices:
             left = block_l_index
@@ -217,7 +226,7 @@ class FileJob:
                 num = right - left
             )
 
-            block = self._data[:, 0, left:right]
+            block = data[:, 0, left:right]
             self.smooth_dc_spike(block, block_l_index)
             
             params, _ = self.fit_frequency_gaussians(freq_array, block)
