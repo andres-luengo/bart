@@ -60,7 +60,7 @@ class Manager:
         logger.handlers.clear()
         logger.addHandler(handler)
 
-        logger.info(f'Initializing worker with {max_memory/1e9 = }')
+        logger.info(f'Initializing worker with {max_memory/1e9 = }GB')
         resource.setrlimit(resource.RLIMIT_AS, (max_memory, max_memory))
     
     @staticmethod
