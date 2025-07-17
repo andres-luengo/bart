@@ -157,7 +157,7 @@ def logging_setup(args: argparse.Namespace):
         maxBytes = 256 * 2**10, # 256 KiB
         backupCount = 3, # so max of 4 * 256 KiB = 1 MiB,
     )
-    file_handler.setLevel(logging.INFO)
+    file_handler.setLevel(min(logging.INFO, level))
     file_handler.setFormatter(formatter)
 
     # if error files long enough that this is a problem, there are bigger ones
