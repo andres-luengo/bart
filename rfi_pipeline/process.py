@@ -109,7 +109,7 @@ class FileJob:
         df = pd.DataFrame(hits)
         
         end_time = time.perf_counter()
-        self._logger.debug(f'Finished file! Took {end_time - start_time:.3g}s')
+        self._logger.info(f'Finished file! Took {end_time - start_time:.3g}s')
         return df
     
     def filter_blocks(self) -> np.ndarray:
