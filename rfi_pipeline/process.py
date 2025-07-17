@@ -44,15 +44,18 @@ class BatchJob:
     def run(self):
         self._logger.info(f'Running on batch {self.batch_num}.')
         self._logger.debug(f'That is, {self.batch = }')
+        keep_header = True
         for i, file in enumerate(self.batch):
-            df = FileJob(file, self.process_params).run()
-            df['source file'] = str(file)
-            if i == 0:
-                keep_header = True
-                self._logger.info(f'Saving to {self.save_path}')
+            try:
+                df = FileJob(file, self.process_params).run()
+            except Exception:
+                self._logger.error(f'Something went wrong on file {file}!', exc_info=True)
             else:
-                keep_header = False
-            df.to_csv(self.save_path, header = keep_header, mode = 'a', index = False)
+                df['source file'] = str(file)
+                df.to_csv(self.save_path, header=keep_header, mode='a', index=False)
+                if keep_header:
+                    self._logger.info(f'Saved to {self.save_path}.')
+                    keep_header = False
 
 # these are run serially within each process, but the OOP makes things neat
 class FileJob:
