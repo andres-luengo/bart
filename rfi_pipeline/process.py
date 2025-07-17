@@ -103,9 +103,11 @@ class FileJob:
     
     def run(self):
         start_time = time.perf_counter()
+        
         filtered_block_l_indices = self.filter_blocks()
         hits = self.get_hits(filtered_block_l_indices)
         df = pd.DataFrame(hits)
+        
         end_time = time.perf_counter()
         self._logger.debug(f'Finished file! Took {end_time - start_time:.3g}s')
         return df
