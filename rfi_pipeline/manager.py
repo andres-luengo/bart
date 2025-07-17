@@ -107,7 +107,7 @@ class Manager:
         ) as p:
             # using this over map so that if anything raises it gets sent up ASAP
             results = p.imap_unordered(
-                self.batch_job, batch_args
+                self.batch_job, batch_args, chunksize=1
             )
             for _ in results: pass # consume lazy map
         

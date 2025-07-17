@@ -126,7 +126,8 @@ class FileJob:
         hot_indices = self.get_hot_indices(test_strip, warm_indices)
 
         end_time = time.perf_counter()
-        self._logger.debug(f'Done filtering blocks, took {end_time - start_time :.3g}s')
+        self._logger.debug(f'Done filtering blocks, took {end_time - start_time :.3g}s.')
+        self._logger.info(f'Found {len(hot_indices)} interesting blocks.')
 
         return hot_indices
 
@@ -138,9 +139,11 @@ class FileJob:
         for i in range(self._num_frequency_blocks):
             l_index = int(i * self._frequency_window_size/2)
             r_index = l_index + self._frequency_window_size
+
+            if r_index > len(test_strip): break
             
             block_strip = test_strip[l_index:r_index]
-            self.smooth_dc_spike(block_strip, l_idx=l_index)
+            self.smooth_dc_spike(block_strip, l_idx=(l_index + self._min_channel))
             
             if (np.max(block_strip) - np.median(block_strip)) > (self._warm_significance * np.std(block_strip)):
                 warm_indices.append(l_index + self._min_channel)
@@ -157,6 +160,9 @@ class FileJob:
             l_index = warm_test_index
             r_index = warm_test_index + self._frequency_window_size
             strip = test_strip[l_index:r_index]
+            self.smooth_dc_spike(strip, l_idx=(l_index + self._min_channel))
+
+            if r_index > len(test_strip): break
 
             if (
                 np.max(strip) - np.median(strip)
@@ -172,14 +178,14 @@ class FileJob:
         along the specified frequency axis. Otherwise, does nothing. Modifies `block` in place.
         """
         FINE_PER_COARSE = 1_048_576
-        r_idx = l_idx + self._frequency_window_size
+        r_idx = l_idx + block.shape[axis]
 
         r_to_spike = (r_idx + (FINE_PER_COARSE // 2)) % FINE_PER_COARSE
 
-        if r_to_spike == 0 or r_to_spike > self._frequency_window_size:
+        if r_to_spike == 0 or r_to_spike > block.shape[axis]:
             return
 
-        spike_idx = self._frequency_window_size - r_to_spike 
+        spike_idx = block.shape[axis] - r_to_spike 
 
         # Prepare slices for all axes
         slicer = [slice(None)] * block.ndim
@@ -304,7 +310,7 @@ class FileJob:
             p0=[
                 freq_array[np.argmax(slice_data)], 
                 np.abs(self._foff),
-                np.max(slice_data) - np.median(slice_data),
+                max(np.max(slice_data) - np.median(slice_data), np.std(slice_data)),
                 np.median(slice_data)
             ],
             # slow, screws up scale for some signals
