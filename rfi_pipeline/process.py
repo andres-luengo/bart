@@ -107,11 +107,13 @@ class FileJob:
         hits = self.get_hits(filtered_block_l_indices)
         df = pd.DataFrame(hits)
         end_time = time.perf_counter()
-        self._logger.debug(f'Done! Took {end_time - start_time:.3g}s')
+        self._logger.debug(f'Finished file! Took {end_time - start_time:.3g}s')
         return df
     
     def filter_blocks(self) -> np.ndarray:
         """Returns the lower index for every block that passes the warm and hot index filters"""
+        start_time = time.perf_counter()
+
         test_strip = self._data[
             self._data.shape[0] // 2, # middle time bin
             0, # drop instrument id dimension
@@ -120,6 +122,9 @@ class FileJob:
 
         warm_indices = self.get_warm_indices(test_strip)
         hot_indices = self.get_hot_indices(test_strip, warm_indices)
+
+        end_time = time.perf_counter()
+        self._logger.debug(f'Done filtering blocks, took {end_time - start_time :.3g}s')
 
         return hot_indices
 
@@ -189,6 +194,8 @@ class FileJob:
         ) / 2
     
     def get_hits(self, block_l_indices: np.ndarray) -> list[dict[str, Any]]:
+        start_time = time.perf_counter()
+
         rows = []
         for block_l_index in block_l_indices:
             left = block_l_index
@@ -253,6 +260,10 @@ class FileJob:
                 'width': width,
                 'flags': '|'.join(flag.replace('|', '') for flag in flags)
             })
+        
+        end_time = time.perf_counter()
+        self._logger.debug(f'Done getting hits, took {end_time - start_time}s')
+
         return rows
     
     @staticmethod
@@ -295,6 +306,7 @@ class FileJob:
                 np.median(slice_data)
             ],
             # slow, screws up scale for some signals
+            # can't really know if we got a fit that makes any sense otherwise...
             bounds=np.array([
                 (freq_array[-1], freq_array[0]),
                 (0, np.inf),
