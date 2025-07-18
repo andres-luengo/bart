@@ -285,7 +285,7 @@ class FileJob:
             })
         
         end_time = time.perf_counter()
-        self._logger.debug(f'Done getting hits, took {end_time - start_time}s')
+        self._logger.debug(f'Done getting hits, took {end_time - start_time:.3g}s')
 
         return rows
 
