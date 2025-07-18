@@ -288,11 +288,6 @@ class FileJob:
         self._logger.debug(f'Done getting hits, took {end_time - start_time}s')
 
         return rows
-    
-    @staticmethod
-    def signal_model(x, mean, stdev, amplitude, noise):
-        exponent = -0.5 * ((x - mean) / stdev)**2
-        return noise + amplitude * np.exp(exponent)
 
     def fit_frequency_gaussians(self, freq_array: np.ndarray, block: np.ndarray):
         """
@@ -319,13 +314,13 @@ class FileJob:
     
     def fit_gaussian_to_slice(self, freq_array: np.ndarray, slice_data: np.ndarray):
         return scipy.optimize.curve_fit(
-            self.signal_model, 
+            signal_model, 
             freq_array, 
             slice_data, 
             p0=[
                 freq_array[np.argmax(slice_data)], 
                 np.abs(self._foff),
-                max(np.max(slice_data) - np.median(slice_data), np.std(slice_data)),
+                np.max((np.max(slice_data) - np.median(slice_data), np.std(slice_data))),
                 np.median(slice_data)
             ],
             # slow, screws up scale for some signals
@@ -345,3 +340,8 @@ class FileJob:
     def __del__(self):
         if hasattr(self, 'file'):
             self._file.close()
+
+@njit
+def signal_model(x, mean, stdev, amplitude, noise):
+    exponent = -0.5 * ((x - mean) / stdev)**2
+    return noise + amplitude * np.exp(exponent)
