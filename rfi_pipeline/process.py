@@ -338,7 +338,7 @@ class FileJob:
         return self._fch1 + index * self._foff
 
     def __del__(self):
-        if hasattr(self, 'file'):
+        if hasattr(self, '_file'):
             self._file.close()
 
 @njit
