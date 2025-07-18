@@ -247,7 +247,10 @@ class FileJob:
                 amps = params[valid_mask, 2]
                 noises = params[valid_mask, 3]
 
-                snrs = (amps + noises) / noises
+                # P_signal = amp * std * sqrt(2pi)
+                # P_noise = C * 'signal width' = C * 2 * sqrt(2ln2) * std
+                # should check with steve...
+                snrs = amps * np.sqrt(np.pi / np.log(2)) / (2 * noises)
 
                 mean = np.mean(means)
                 width = 2.355 * np.mean(stds) # stdev to FWHM
