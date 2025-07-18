@@ -7,7 +7,7 @@ import multiprocessing as mp
 
 import logging, logging.handlers
 
-from collections import deque
+import json
 
 from typing import Any
 
@@ -35,6 +35,9 @@ class Manager:
         self.outdir = outdir
         self._logger = logging.getLogger(__name__)
         self.max_rss = max_rss
+
+        with open(self.outdir / 'process-params.json', 'w') as f:
+            json.dump(self.process_params, f)
 
     @classmethod
     def from_namespace(cls, arg: Namespace, files: tuple[Path, ...]):
