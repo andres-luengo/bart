@@ -137,7 +137,7 @@ class FileJob:
         """
         warm_indices = []
         for i in range(self._num_frequency_blocks):
-            l_index = int(i * self._frequency_window_size/2)
+            l_index = i * self._frequency_window_size//2
             r_index = l_index + self._frequency_window_size
 
             if r_index > len(test_strip): break
