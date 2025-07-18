@@ -73,6 +73,7 @@ class FileJob:
         if not m:
             self._logger.warning(f'Got a weird file name: {file}')
         
+        # might actually just work but i am too lazy to test tbh
         if 'spliced' in str(file):
             raise NotImplementedError('Spliced files are not supported.')
 
@@ -81,6 +82,7 @@ class FileJob:
         self._fch1: float = self._data.attrs['fch1'] #type: ignore
         self._foff: float = self._data.attrs['foff'] #type: ignore
         self._nchans: float = self._data.attrs['nchans'] #type: ignore
+        self._nfpc: float = self._data.attrs['nfpc'] #type: ignore
 
         self._logger.info(f'Opened {file}')
         self._logger.debug(f'...with header {dict(self._data.attrs)}')
@@ -180,10 +182,9 @@ class FileJob:
         If there is a DC spike in `block`, replaces it with the average of the values to the left and right of it
         along the specified frequency axis. Otherwise, does nothing. Modifies `block` in place.
         """
-        FINE_PER_COARSE = 1_048_576
         r_idx = l_idx + block.shape[axis]
 
-        r_to_spike = (r_idx + (FINE_PER_COARSE // 2)) % FINE_PER_COARSE
+        r_to_spike = (r_idx + (self._nfpc // 2)) % self._nfpc
 
         if r_to_spike == 0 or r_to_spike > block.shape[axis]:
             return
@@ -226,7 +227,7 @@ class FileJob:
             freq_array = np.linspace(
                 self._fch1 + left * self._foff,
                 self._fch1 + right * self._foff,
-                num = right - left
+                num=self._frequency_window_size
             )
 
             block = data[:, 0, left:right]
