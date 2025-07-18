@@ -20,6 +20,9 @@ import warnings
 
 import scipy.optimize
 
+from numba import njit
+logging.getLogger('numba').setLevel(logging.WARNING)
+
 # things to think about:
 # DC spikes
 # numba
