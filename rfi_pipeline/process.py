@@ -316,7 +316,7 @@ class FileJob:
                     # too many fits failed
                     valid_mask.sum() < block.shape[0] // 2
                     # max is way bigger than others
-                    or max_snr - np.median(others) > 10 * scipy.stats.median_abs_deviation(others)
+                    or max_snr - np.median(others) > 5 * np.std(others)
                 ):
                     flags.append('blip')
 
