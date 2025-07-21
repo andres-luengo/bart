@@ -257,12 +257,13 @@ class FileJob:
                 width = 2.355 * np.mean(stds) # stdev to FWHM
                 snr = np.mean(snrs)
 
+                max_snr = np.max(snrs)
+                others = np.delete(snrs, np.argmax(snrs))
                 if (
-                    len(snrs) < 4
-                    or (
-                        np.max(snrs) - np.median(snrs) 
-                        > 10 * scipy.stats.median_abs_deviation(snrs)
-                    )
+                    # too many fits failed
+                    len(snrs) < block.shape[1]
+                    # max is way bigger than others
+                    or max_snr - np.median(others) > 5 * scipy.stats.median_abs_deviation(others)
                 ):
                     flags.append('blip')
 
