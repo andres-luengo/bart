@@ -64,7 +64,7 @@ def parse_args() -> argparse.Namespace:
         help = (
             'A similar filter happens after the WARM_SIGNIFICANCE filter, '
             'leaving in blocks that have data points at least HOT_SIGNIFICANCE median '
-            'absolute deviaions from the median. Defaults to 10.0'
+            'absolute deviaions from the median. Defaults to 8.0'
         ),
         default = 8.0
     )
@@ -76,7 +76,7 @@ def parse_args() -> argparse.Namespace:
             'leaving in blocks whose max value has an SNR of at least this value. '
             'The noise is calculated by sigma clipping the data along the middle time slice '
             'with lower and upper clips of SIGMA_CLIP, and then calculating the standard deviation. '
-            'Defaults to 10.0'
+            'Defaults to 7.0'
         ),
         default = 7.0
     )
