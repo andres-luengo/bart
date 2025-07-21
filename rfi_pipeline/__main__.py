@@ -66,7 +66,7 @@ def parse_args() -> argparse.Namespace:
             'leaving in blocks that have data points at least HOT_SIGNIFICANCE median '
             'absolute deviaions from the median. Defaults to 10.0'
         ),
-        default = 10.0
+        default = 8.0
     )
     processing_group.add_argument(
         '--hotter-significance',
@@ -78,7 +78,7 @@ def parse_args() -> argparse.Namespace:
             'with lower and upper clips of SIGMA_CLIP, and then calculating the standard deviation. '
             'Defaults to 10.0'
         ),
-        default = 10.0
+        default = 7.0
     )
     processing_group.add_argument(
         '--sigma-clip',
