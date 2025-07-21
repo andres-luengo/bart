@@ -37,7 +37,7 @@ class Manager:
         self.max_rss = max_rss
 
         with open(self.outdir / 'process-params.json', 'w') as f:
-            json.dump(self.process_params, f)
+            json.dump(self.process_params, f, indent=4)
 
     @classmethod
     def from_namespace(cls, arg: Namespace, files: tuple[Path, ...]):
