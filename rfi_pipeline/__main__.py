@@ -54,9 +54,9 @@ def parse_args() -> argparse.Namespace:
         type = float,
         help = (
             'We first filter for blocks that have data points WARM_SIGNIFICANCE '
-            'sigma above the median along the middle time bins. Defaults to 5.0.'
+            'sigma above the median along the middle time bins. Defaults to 4.0.'
         ),
-        default = 5.0
+        default = 4.0
     )
     processing_group.add_argument(
         '--hot-significance',
