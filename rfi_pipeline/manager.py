@@ -43,9 +43,11 @@ class Manager:
     def from_namespace(cls, arg: Namespace, files: tuple[Path, ...]):
         return cls(
             process_params = {
-                'freq_window' : arg.frequency_block_size,
-                'warm_significance' : arg.warm_significance,
-                'hot_significance' : arg.hot_significance,
+                'freq_window': arg.frequency_block_size,
+                'warm_significance': arg.warm_significance,
+                'hot_significance': arg.hot_significance,
+                'hotter_significance': arg.hotter_significance,
+                'sigma_clip': arg.sigma_clip,
                 'min_freq': arg.min_freq,
                 'max_freq': arg.max_freq
             },

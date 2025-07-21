@@ -82,7 +82,12 @@ class FileJob:
         self._fch1: float = self._data.attrs['fch1'] #type: ignore
         self._foff: float = self._data.attrs['foff'] #type: ignore
         self._nchans: float = self._data.attrs['nchans'] #type: ignore
-        self._nfpc: float = self._data.attrs['nfpc'] #type: ignore
+        self._nfpc: int | None = self._data.attrs.get('nfpc') #type: ignore
+        if self._nfpc is None:
+            self._nfpc: int = 1<<20
+        else:
+            self._logger.info(f'Got nfpc = {self._nfpc}')
+        
 
         self._logger.info(f'Opened {file}')
         self._logger.debug(f'...with header {dict(self._data.attrs)}')
@@ -100,8 +105,13 @@ class FileJob:
         self._logger.debug(f'Running on {self._max_channel - self._min_channel} channels, {(self._max_channel - self._min_channel) / self._data.shape[2]:.2%} of the data.')
                 
         self._frequency_window_size = process_params['freq_window']
+
         self._warm_significance = process_params['warm_significance']
         self._hot_significance = process_params['hot_significance']
+        self._hotter_significance = process_params['hotter_significance']
+
+        self._sigma_clip = process_params['sigma_clip']
+
         self._num_even_frequency_blocks = int(np.ceil((self._max_channel - self._min_channel) / self._frequency_window_size))
         # overlapping blocks; last even block doesn't get an odd block
         self._num_frequency_blocks = self._num_even_frequency_blocks * 2 - 1
@@ -129,12 +139,13 @@ class FileJob:
 
         warm_indices = self.get_warm_indices(test_strip)
         hot_indices = self.get_hot_indices(test_strip, warm_indices)
+        hotter_indices = self.get_hotter_indices(test_strip, hot_indices)
 
         end_time = time.perf_counter()
-        self._logger.debug(f'Done filtering blocks, took {end_time - start_time :.3g}s.')
+        self._logger.info(f'Done filtering blocks, took {end_time - start_time :.3g}s.')
         self._logger.info(f'Found {len(hot_indices)} interesting blocks.')
 
-        return hot_indices
+        return hotter_indices
 
     def get_warm_indices(self, test_strip: np.ndarray):
         """
@@ -164,19 +175,40 @@ class FileJob:
             warm_test_index = warm_index - self._min_channel
             l_index = warm_test_index
             r_index = warm_test_index + self._frequency_window_size
+            if r_index > len(test_strip): break
+
             strip = test_strip[l_index:r_index]
             self.smooth_dc_spike(strip, l_idx=(l_index + self._min_channel))
 
-            if r_index > len(test_strip): break
+            strip_significance = (np.max(strip) - np.median(strip)) / scipy.stats.median_abs_deviation(strip)
 
-            if (
-                np.max(strip) - np.median(strip)
-                > self._hot_significance * scipy.stats.median_abs_deviation(strip)
-            ):
+            if (strip_significance > self._hot_significance):
                 hot_indices.append(l_index + self._min_channel)
         return np.array(hot_indices)
     
+    def get_hotter_indices(self, test_strip: np.ndarray, hot_indices: np.ndarray) -> np.ndarray:
+        hotter_indices = []
+        for hot_index in hot_indices:
+            hot_test_index = hot_index - self._min_channel
+            l_index = hot_test_index
+            r_index = l_index + self._frequency_window_size
+            if r_index > len(test_strip): break
 
+            strip = test_strip[l_index:r_index]
+            self.smooth_dc_spike(strip, l_idx=(l_index + self._min_channel))
+
+            clipped, _, _ = scipy.stats.sigmaclip(strip, self._sigma_clip, self._sigma_clip)
+            noise = np.std(clipped)
+            baseline = np.mean(clipped)
+            
+            signal = (np.max(strip) - baseline) / noise
+
+            snr = signal/noise
+
+            if snr >= self._hotter_significance:
+                hotter_indices.append(snr)
+        
+        return np.array(hotter_indices)    
 
     def smooth_dc_spike(self, block: np.ndarray, l_idx: int, axis: int = -1):
         """

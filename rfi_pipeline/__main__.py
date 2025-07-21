@@ -68,6 +68,27 @@ def parse_args() -> argparse.Namespace:
         ),
         default = 10.0
     )
+    processing_group.add_argument(
+        '--hotter-significance',
+        type = float,
+        help = (
+            'A similar filter happens after the HOT_SIGNIFICANCE filter, '
+            'leaving in blocks whose max value has an SNR of at least this value. '
+            'The noise is calculated by sigma clipping the data along the middle time slice '
+            'with lower and upper clips of SIGMA_CLIP, and then calculating the standard deviation. '
+            'Defaults to 10.0'
+        ),
+        default = 10.0
+    )
+    processing_group.add_argument(
+        '--sigma-clip',
+        type = float,
+        help = (
+            'The value by which to sigma clip data snippets in the HOTTER_SIGNIFICANCE filter. '
+            'Defaults to 3.0.'
+        ),
+        default = 3.0
+    )
 
     resource_management_group = parser.add_argument_group('Resource Management')
     resource_management_group.add_argument(
