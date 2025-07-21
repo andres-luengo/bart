@@ -177,6 +177,7 @@ class FileJob:
         return np.array(hot_indices)
     
 
+
     def smooth_dc_spike(self, block: np.ndarray, l_idx: int, axis: int = -1):
         """
         If there is a DC spike in `block`, replaces it with the average of the values to the left and right of it
@@ -246,12 +247,19 @@ class FileJob:
                 means = params[valid_mask, 0]
                 stds = params[valid_mask, 1]
                 amps = params[valid_mask, 2]
-                noises = params[valid_mask, 3]
+                noise_baselines = params[valid_mask, 3]
 
                 # P_signal = amp * std * sqrt(2pi)
                 # P_noise = C * 'signal width' = C * 2 * sqrt(2ln2) * std
                 # should check with steve...
-                snrs = amps * np.sqrt(np.pi / np.log(2)) / (2 * noises)
+                # snrs = amps * np.sqrt(np.pi / np.log(2)) / (2 * noises) 
+                noises_ = []
+                for time_idx in range(block.shape[0]):
+                    clipped, _, _ = scipy.stats.sigmaclip(block[time_idx], low=3, high=3)
+                    noises_.append(np.std(clipped))
+                noises = np.array(noises_)
+                
+                snrs = (amps - noise_baselines) / noises
 
                 mean = np.mean(means)
                 width = 2.355 * np.mean(stds) # stdev to FWHM
@@ -261,7 +269,7 @@ class FileJob:
                 others = np.delete(snrs, np.argmax(snrs))
                 if (
                     # too many fits failed
-                    len(snrs) < block.shape[1]
+                    len(snrs) < block.shape[1] // 2
                     # max is way bigger than others
                     or max_snr - np.median(others) > 5 * scipy.stats.median_abs_deviation(others)
                 ):
