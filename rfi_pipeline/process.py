@@ -62,7 +62,9 @@ class BatchJob:
 
 # these are run serially within each process, but the OOP makes things neat
 class FileJob:
-    def __init__(self, file: Path, process_params: dict[str, Any]):
+    def __init__(self, file: Path | str, process_params: dict[str, Any]):
+        file = Path(file)
+
         m = re.search(r'\/([^\/]+)$', str(file))
         if m:
             short_file = m.group(1)
@@ -137,14 +139,16 @@ class FileJob:
             self._min_channel:self._max_channel
         ]
 
+        self._logger.debug(f'Starting with {self._num_frequency_blocks} blocks.')
         warm_indices = self.get_warm_indices(test_strip)
+        self._logger.debug(f'Got {len(warm_indices)} warm blocks.')
         hot_indices = self.get_hot_indices(test_strip, warm_indices)
+        self._logger.debug(f'Got {len(hot_indices)} hot blocks.')
         hotter_indices = self.get_hotter_indices(test_strip, hot_indices)
 
         end_time = time.perf_counter()
         self._logger.info(f'Done filtering blocks, took {end_time - start_time :.3g}s.')
-        self._logger.info(f'Found {len(hot_indices)} interesting blocks.')
-
+        self._logger.info(f'Found {len(hotter_indices)} hotter blocks.')
         return hotter_indices
 
     def get_warm_indices(self, test_strip: np.ndarray):
@@ -160,8 +164,12 @@ class FileJob:
             
             block_strip = test_strip[l_index:r_index]
             self.smooth_dc_spike(block_strip, l_idx=(l_index + self._min_channel))
+            # probably makes it prefer bright narrowband signals but too soon to sigma clip
+            others = np.delete(block_strip, np.argmax(block_strip))
+
+            strip_significance = (np.max(block_strip) - np.median(others)) / np.std(others)
             
-            if (np.max(block_strip) - np.median(block_strip)) > (self._warm_significance * np.std(block_strip)):
+            if strip_significance > self._warm_significance:
                 warm_indices.append(l_index + self._min_channel)
         
         return np.array(warm_indices)
@@ -201,12 +209,12 @@ class FileJob:
             noise = np.std(clipped)
             baseline = np.mean(clipped)
             
-            signal = (np.max(strip) - baseline) / noise
+            signal = np.max(strip) - baseline
 
             snr = signal/noise
 
             if snr >= self._hotter_significance:
-                hotter_indices.append(snr)
+                hotter_indices.append(l_index + self._min_channel)
         
         return np.array(hotter_indices)    
 
@@ -242,13 +250,18 @@ class FileJob:
         start_time = time.perf_counter()
 
         # for <1000, generally fast enough to read in specific blocks
-        if len(block_l_indices) < 2**10:
-            data = self._data
-        # otherwise, i think its faster to just load in the whole thing (sorry RAM)
-        else:
+        data = self._data
+        if len(block_l_indices) >= 2**10:
             # for some reason, using zeros_like or something like that loads in the entire dataset
-            data = np.full(self._data.shape, np.nan)
-            data[..., self._min_channel:self._max_channel] = self._data[..., self._min_channel:self._max_channel]
+            try:
+                data = np.full(self._data.shape, np.nan)
+                data[..., self._min_channel:self._max_channel] = self._data[..., self._min_channel:self._max_channel]
+            except np._core._exceptions._ArrayMemoryError as e: # type: ignore
+                self._logger.warning(
+                    'Got a memory error while trying to load data all at once. '
+                    'Falling back to loading by blocks...', 
+                    exc_info=True)
+                data = self._data
 
         rows = []
         for block_l_index in block_l_indices:
@@ -286,12 +299,12 @@ class FileJob:
                 # should check with steve...
                 # snrs = amps * np.sqrt(np.pi / np.log(2)) / (2 * noises) 
                 noises_ = []
-                for time_idx in range(block.shape[0]):
+                for time_idx in np.arange(block.shape[0])[valid_mask]:
                     clipped, _, _ = scipy.stats.sigmaclip(block[time_idx], low=3, high=3)
                     noises_.append(np.std(clipped))
                 noises = np.array(noises_)
                 
-                snrs = (amps - noise_baselines) / noises
+                snrs = amps / noises
 
                 mean = np.mean(means)
                 width = 2.355 * np.mean(stds) # stdev to FWHM
@@ -301,9 +314,9 @@ class FileJob:
                 others = np.delete(snrs, np.argmax(snrs))
                 if (
                     # too many fits failed
-                    len(snrs) < block.shape[1] // 2
+                    valid_mask.sum() < block.shape[0] // 2
                     # max is way bigger than others
-                    or max_snr - np.median(others) > 5 * scipy.stats.median_abs_deviation(others)
+                    or max_snr - np.median(others) > 10 * scipy.stats.median_abs_deviation(others)
                 ):
                     flags.append('blip')
 
@@ -324,6 +337,16 @@ class FileJob:
                 'snr': snr,
                 'width': width,
                 'flags': '|'.join(flag.replace('|', '') for flag in flags)
+            })
+
+        if not rows:
+            rows.append({
+                'frequency_index': -1,
+                'frequency': np.nan,
+                'kurtosis': np.nan,
+                'snr': np.nan,
+                'width': np.nan,
+                'flags': 'EMPTY FILE'
             })
         
         end_time = time.perf_counter()
