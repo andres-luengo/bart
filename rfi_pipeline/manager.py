@@ -36,8 +36,11 @@ class Manager:
         self._logger = logging.getLogger(__name__)
         self.max_rss = max_rss
 
-        with open(self.outdir / 'process-params.json', 'w') as f:
-            json.dump(self.process_params, f, indent=4)
+        meta = {
+            'outdir': str(self.outdir)
+        } | self.process_params
+        with open(self.outdir / 'meta.json', 'w') as f:
+            json.dump(meta, f, indent=4)
 
     @classmethod
     def from_namespace(cls, arg: Namespace, files: tuple[Path, ...]):
