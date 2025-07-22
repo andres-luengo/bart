@@ -306,7 +306,8 @@ class FileJob:
                 
                 snrs = amps / noises
 
-                mean = np.mean(means)
+                # a bit more resilient for having a handful of bad time slices
+                mean = np.median(means)
                 width = 2.355 * np.mean(stds) # stdev to FWHM
                 snr = np.mean(snrs)
 
@@ -326,7 +327,7 @@ class FileJob:
                 self._logger.warning(f'Could not fit any Gaussians to block at {block_l_index}')
                 # consider just dropping the block at this point tbh
 
-            # need it so kurtosis doesn't blow up
+            # normalize to stop kurtosis from exploding
             block_normalized = (block - np.mean(block)) / np.std(block)
             kurtosis = scipy.stats.kurtosis(block_normalized.flat)
 
@@ -340,6 +341,7 @@ class FileJob:
             })
 
         if not rows:
+            # when analysing data don't forget to drop these
             rows.append({
                 'frequency_index': -1,
                 'frequency': np.nan,
