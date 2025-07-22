@@ -199,4 +199,4 @@ INSTALLATION_GUIDE.md
 
 # test run stuff
 experiments/test_*
-experiments/scratch_images/*
+experiments/*images/*
