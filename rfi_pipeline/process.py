@@ -11,6 +11,7 @@ import h5py
 import logging
 
 from typing import Any
+from threading import Lock
 
 import time
 
@@ -23,17 +24,23 @@ import scipy.optimize
 from numba import njit
 logging.getLogger('numba').setLevel(logging.WARNING)
 
+from contextlib import contextmanager
+import json
+
+import os
+
 # things to think about:
 # DC spikes
 # numba
 
 class BatchJob:
     def __init__(
-            self,
+            self, *,
             process_params: dict[str, Any],
             outdir: Path, 
             batch: tuple[Path, ...], 
-            batch_num: int = -1
+            progress_lock: Lock,
+            batch_num: int = -1,
     ):
         self._logger = logging.getLogger(f'{__name__} (batch {batch_num:>03})')
 
@@ -42,7 +49,13 @@ class BatchJob:
         self.batch = batch
         self.batch_num = batch_num
 
-        self.save_path = outdir / f'batch_{batch_num:>03}.csv'
+        self.save_path = outdir / 'batches' / f'batch_{batch_num:>03}.csv'
+
+        self._progress_lock = progress_lock
+        self._progress_data_path = outdir / 'progress-data.json'
+
+        with self.get_progress_data() as progress_data:
+            progress_data[self.batch_num]['worker pid'] = os.getpid()
     
     def run(self):
         self._logger.info(f'Running on batch {self.batch_num}.')
@@ -59,6 +72,20 @@ class BatchJob:
                 if keep_header:
                     self._logger.info(f'Saved to {self.save_path}.')
                     keep_header = False
+            
+            with self.get_progress_data() as progress_data:
+                progress_data[self.batch_num]['num complete'] = i + 1
+    
+    @contextmanager
+    def get_progress_data(self):
+        with self._progress_lock:
+            with self._progress_data_path.open('r') as f:
+                progress_data: list[dict[str, Any]] = json.load(f)
+
+            yield progress_data
+
+            with self._progress_data_path.open('w') as f:
+                json.dump(progress_data, f)
 
 # these are run serially within each process, but the OOP makes things neat
 class FileJob:

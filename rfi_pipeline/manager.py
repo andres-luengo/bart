@@ -36,11 +36,24 @@ class Manager:
         self._logger = logging.getLogger(__name__)
         self.max_rss = max_rss
 
+        self._setup_meta()
+        self._setup_progress_file()
+    
+    def _setup_meta(self):
         meta = {
             'outdir': str(self.outdir)
         } | self.process_params
         with open(self.outdir / 'meta.json', 'w') as f:
             json.dump(meta, f, indent=4)
+    
+    def _setup_progress_file(self):
+        progress_data = [
+            {'num_complete': 0, 'batch_length': len(batch)}
+            for batch in self.batches
+        ]
+        
+        with open(self.outdir / 'progress-data.json', 'w') as f:
+            json.dump(progress_data, f, indent=4)
 
     @classmethod
     def from_namespace(cls, arg: Namespace, files: tuple[Path, ...]):
@@ -72,12 +85,12 @@ class Manager:
         resource.setrlimit(resource.RLIMIT_AS, (max_memory, max_memory))
     
     @staticmethod
-    def batch_job(args: tuple[dict[str, Any], Path, tuple[Path, ...], int]):
+    def batch_job(kwargs: dict):
         try:
-            job = BatchJob(*args)
+            job = BatchJob(**kwargs)
             return job.run()
         except Exception as e:
-            id: int = args[-1]
+            id: int = kwargs['batch_num']
             logging.critical(
                 f'EXCEPTION ON BATCH {id:<03}', 
                 exc_info = True, stack_info = True
@@ -87,36 +100,41 @@ class Manager:
     def run(self):
         self._logger.info('Starting jobs...')
 
-        batch_args = (
-            (
-                self.process_params,
-                self.outdir / 'batches',
-                batch, 
-                i
-            )
-            for i, batch in enumerate(self.batches)
-        )
+        with mp.Manager() as mp_manager:
+            log_queue = mp_manager.Queue()
+            progress_lock = mp_manager.Lock()
 
-        log_queue = mp.Manager().Queue()
-        worker_listener = logging.handlers.QueueListener(
-            log_queue,
-            *logging.getLogger().handlers,
-            respect_handler_level = True
-        )
-        worker_listener.start()
+            batch_args = (
+                {
+                    'batch': batch, 
+                    'batch_num': i,
+                    'process_params': self.process_params,
+                    'outdir': self.outdir,
+                    'progress_lock': progress_lock
+                }
+                for i, batch in enumerate(self.batches)
+            )
 
-        with mp.Pool(
-            processes=self.num_processes,
-            initializer=self.worker_init,
-            initargs=(
-                log_queue, 
-                int(self.max_rss // self.num_processes)
+            
+            worker_listener = logging.handlers.QueueListener(
+                log_queue,
+                *logging.getLogger().handlers,
+                respect_handler_level = True
             )
-        ) as p:
-            # using this over map so that if anything raises it gets sent up ASAP
-            results = p.imap_unordered(
-                self.batch_job, batch_args, chunksize=1
-            )
-            for _ in results: pass # consume lazy map
-        
-        worker_listener.stop()
+            worker_listener.start()
+
+            with mp.Pool(
+                processes=self.num_processes,
+                initializer=self.worker_init,
+                initargs=(
+                    log_queue, 
+                    int(self.max_rss // self.num_processes)
+                )
+            ) as p:
+                # using this over map so that if anything raises it gets sent up ASAP
+                results = p.imap_unordered(
+                    self.batch_job, batch_args, chunksize=1
+                )
+                for _ in results: pass # consume lazy map
+            
+            worker_listener.stop()
