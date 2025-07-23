@@ -211,7 +211,7 @@ def logging_setup(args: argparse.Namespace):
 def get_file_names(file: Path) -> tuple[Path, ...]:
     with file.open('r') as f:
         lines = f.readlines()
-    paths = map(Path, lines)
+    paths = (Path(line.strip()) for line in lines)
     return tuple(paths)
 
 def main():
