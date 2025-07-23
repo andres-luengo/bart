@@ -6,6 +6,7 @@ import json
 
 from typing import Any
 
+import numpy as np
 import pandas as pd
 
 from io import StringIO
@@ -37,8 +38,22 @@ def _progress_bar(percentage: float) -> str:
     bar += ' ' * (100 - len(bar))
     return f'[{bar}]'
 
-def _estimate_total_remaining_time(df: pd.DataFrame):
-    pass
+def _estimate_total_remaining_time(df: pd.DataFrame) -> float:
+    num_complete_files = int(df['num complete'].sum())
+    num_files = int(max(df['batch size'].sum()), 1)
+    num_remaining_files = num_files - num_complete_files
+
+    hit_counts = np.hstack(df['hit counts'].dropna()) #type: ignore
+    
+    # seconds
+    job_durations = np.hstack(df['times elapsed'].dropna()) #type: ignore
+    
+    hits_remaining_est = np.mean(hit_counts) * num_remaining_files
+    
+    # hits/second
+    hit_process_rate_est = np.mean(hit_counts / job_durations)
+
+    return hits_remaining_est / hit_process_rate_est
 
 def format_progress_data(data: list[dict[str, Any]]) -> str:
     output = StringIO()
