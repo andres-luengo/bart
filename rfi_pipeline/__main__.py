@@ -32,7 +32,7 @@ def parse_args() -> argparse.Namespace:
         help = 'If present and outdir already exists, it will be overwritten.'
     )
     io_group.add_argument(
-        '-c', '--resume', '--continue',
+        '-c', '--resume',
         action='store_true',
         help='If outdir exists, continue job, starting at the last file that was being processed. Errors out if outdir does not exist.'
     )
