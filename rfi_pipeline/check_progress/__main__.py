@@ -14,6 +14,8 @@ from io import StringIO
 import datetime as dt
 from time import sleep
 
+import sys
+
 def _parse_args():
     global args
 
@@ -136,6 +138,7 @@ def main():
     data = _get_progress_data()
     try:
         while True:
+            sys.stdout.truncate(0)
             print('\r' + format_progress_data(data))
             sleep(0.1)
     except KeyboardInterrupt:
