@@ -136,7 +136,7 @@ def main():
     data = _get_progress_data()
     try:
         while True:
-            print(format_progress_data(data))
+            print('\r' + format_progress_data(data))
             sleep(0.1)
     except KeyboardInterrupt:
         pass
