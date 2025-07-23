@@ -40,13 +40,18 @@ def _progress_bar(percentage: float, width: int = 50) -> str:
 
 def _estimate_total_remaining_time(df: pd.DataFrame) -> float:
     num_complete_files = int(df['num complete'].sum())
-    num_files = int(max(df['batch size'].sum()), 1)
+    num_files = max(int(df['batch size'].sum()), 1)
     num_remaining_files = num_files - num_complete_files
 
-    hit_counts = np.hstack(df['hit counts'].dropna()) #type: ignore
+    hit_count_lists = df['hit counts'].dropna()
+
+    if len(hit_count_lists) == 0: return np.inf
+    
+    hit_counts = np.hstack(hit_count_lists) #type: ignore
     
     # seconds
-    job_durations = np.hstack(df['times elapsed'].dropna()) #type: ignore
+    job_duration_lists = df['times elapsed'].dropna()
+    job_durations = np.hstack(job_duration_lists) #type: ignore
     
     # want to ignore failed files in calculations
     valid_mask = (hit_counts >= 0)
@@ -82,8 +87,12 @@ def format_progress_data(data: list[dict[str, Any]]) -> str:
     output.write(f'{_progress_bar(percentage)}\n')
 
     # (might return inf if we've only seen files with no hits for the last few)
-    time_estimate = min(_estimate_total_remaining_time(df), timedelta.max.total_seconds())
-    output.write(f'Time remaining: ~{timedelta(seconds=time_estimate)!s}\n')
+    time_estimate = _estimate_total_remaining_time(df)
+    try:
+        time_estimate_delta = timedelta(seconds=time_estimate)
+    except OverflowError:
+        time_estimate_delta = timedelta.max
+    output.write(f'Time remaining: ~{time_estimate_delta!s}\n')
 
     output.write(f'\nWORKERS\n')
     for batch_idx, active_file in df[~df['worker pid'].isna()].iterrows():
@@ -97,8 +106,12 @@ def format_progress_data(data: list[dict[str, Any]]) -> str:
         output.write(f'{_progress_bar(percentage)}\n')
 
         batch_df = df.loc[[batch_idx]]
-        time_estimate = min(_estimate_total_remaining_time(batch_df), timedelta.max.total_seconds())
-        output.write(f'Time remaining: ~{timedelta(seconds=time_estimate)!s}\n')
+        time_estimate = _estimate_total_remaining_time(batch_df)
+        try:
+            time_estimate_delta = timedelta(seconds=time_estimate)
+        except OverflowError:
+            time_estimate_delta = timedelta.max
+        output.write(f'Time remaining: ~{time_estimate_delta!s}\n')
 
     return output.getvalue()
     
