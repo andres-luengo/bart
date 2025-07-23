@@ -14,7 +14,7 @@ from typing import Any
 from threading import Lock
 
 import time
-import datetime
+from datetime import datetime
 
 import re
 
@@ -57,6 +57,7 @@ class BatchJob:
             batch_data['worker pid'] = os.getpid()
             batch_data['batch size'] = len(self.batch)
             batch_data['num complete'] = 0
+            batch_data['last file end time'] = datetime.now().isoformat()
     
     def run(self):
         self._logger.info(f'Running on batch {self.batch_num}.')
@@ -86,12 +87,17 @@ class BatchJob:
             
             batch_progress['num complete'] = i + 1
             
-            if 'times finished' not in batch_progress: 
-                batch_progress['times finished'] = []
-            times: list[str] = batch_progress['times finished']
-            times.append(datetime.datetime.now(datetime.UTC).isoformat())
-            if len(times) > MAX_PROGRESS_LIST_LENGTH:
-                times.pop(0)
+            if 'times elapsed' not in batch_progress:
+                batch_progress['times elapsed'] = []
+            now = datetime.now()
+            last_job = datetime.fromisoformat(batch_progress['last file end time'])
+            this_job_time_elapsed = (now - last_job).total_seconds()
+            times_elapsed = batch_progress['times elapsed']
+            times_elapsed.append(this_job_time_elapsed)
+            if len(times_elapsed) > MAX_PROGRESS_LIST_LENGTH:
+                times_elapsed.pop(0)
+    
+            batch_progress['last file end time'] = now.isoformat()
             
             if 'hit counts' not in batch_progress: 
                 batch_progress['hit counts'] = []
