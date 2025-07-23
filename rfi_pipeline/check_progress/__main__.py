@@ -81,7 +81,8 @@ def format_progress_data(data: list[dict[str, Any]]) -> str:
     output.write(f'Total progress: {num_all_complete:,d}/{num_all_files:,d} ({percentage:.2%})\n')
     output.write(f'{_progress_bar(percentage)}\n')
 
-    time_estimate =_estimate_total_remaining_time(df)
+    # (might return inf if we've only seen files with no hits for the last few)
+    time_estimate = min(_estimate_total_remaining_time(df), timedelta.max.total_seconds())
     output.write(f'Time remaining: ~{timedelta(seconds=time_estimate)!s}\n')
 
     output.write(f'\nWORKERS\n')
@@ -94,6 +95,10 @@ def format_progress_data(data: list[dict[str, Any]]) -> str:
         percentage = num_complete / batch_size
         output.write(f'Total progress: {num_complete:,d}/{batch_size:,d} ({percentage:.2%})\n')
         output.write(f'{_progress_bar(percentage)}\n')
+
+        batch_df = df.loc[[batch_idx]]
+        time_estimate = min(_estimate_total_remaining_time(batch_df), timedelta.max.total_seconds())
+        output.write(f'Time remaining: ~{timedelta(seconds=time_estimate)!s}\n')
 
     return output.getvalue()
     
