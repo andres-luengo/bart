@@ -139,7 +139,7 @@ def main():
     try:
         while True:
             sys.stdout.truncate(0)
-            print('\r' + format_progress_data(data))
+            print(format_progress_data(data))
             sleep(0.1)
     except KeyboardInterrupt:
         pass
