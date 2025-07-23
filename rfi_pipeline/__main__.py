@@ -190,8 +190,8 @@ def logging_setup(args: argparse.Namespace):
 
     file_handler = logging.handlers.RotatingFileHandler(
         filename = args.outdir / 'logs' / 'all_logs.log',
-        maxBytes = 256 * 2**10, # 256 KiB
-        backupCount = 3, # so max of 4 * 256 KiB = 1 MiB,
+        maxBytes = 2**20, # 1 MiB
+        backupCount = 3, # so max of 4 MiB,
     )
     file_handler.setLevel(min(logging.INFO, level))
     file_handler.setFormatter(formatter)
