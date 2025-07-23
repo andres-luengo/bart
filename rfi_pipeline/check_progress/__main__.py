@@ -12,6 +12,7 @@ import pandas as pd
 from io import StringIO
 
 import datetime as dt
+from time import sleep
 
 def _parse_args():
     global args
@@ -136,6 +137,7 @@ def main():
     try:
         while True:
             print(format_progress_data(data))
+            sleep(0.1)
     except KeyboardInterrupt:
         pass
 
