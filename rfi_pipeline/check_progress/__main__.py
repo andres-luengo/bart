@@ -11,7 +11,7 @@ import pandas as pd
 
 from io import StringIO
 
-from datetime import timedelta
+import datetime as dt
 
 def _parse_args():
     global args
@@ -73,7 +73,8 @@ def format_progress_data(data: list[dict[str, Any]]) -> str:
 
     df = pd.DataFrame(
         data, 
-        columns=['worker pid', 'num complete', 'batch size', 'hit counts', 'times elapsed']
+        columns=['worker pid', 'num complete', 'batch size', 'hit counts', 
+                 'times elapsed', 'last file end time']
     )
     num_active_workers = (~df['worker pid'].isna()).sum()
     
@@ -89,10 +90,18 @@ def format_progress_data(data: list[dict[str, Any]]) -> str:
     # (might return inf if we've only seen files with no hits for the last few)
     time_estimate = _estimate_total_remaining_time(df)
     try:
-        time_estimate_delta = timedelta(seconds=time_estimate)
+        time_estimate_delta = dt.timedelta(seconds=time_estimate)
     except OverflowError:
-        time_estimate_delta = timedelta.max
+        time_estimate_delta = dt.timedelta.max
     output.write(f'Time remaining: ~{time_estimate_delta!s}\n')
+
+    latest_file_finish_time = (df['last file end time']
+                               .dropna()
+                               .apply(dt.datetime.fromisoformat)
+                               .max())
+    now = dt.datetime.now(dt.timezone.utc)
+    time_since_last_finish = now - latest_file_finish_time
+    output.write(f'Time since last finish: {time_since_last_finish!s}\n')
 
     output.write(f'\nWORKERS\n')
     for batch_idx, active_file in df[~df['worker pid'].isna()].iterrows():
@@ -108,10 +117,13 @@ def format_progress_data(data: list[dict[str, Any]]) -> str:
         batch_df = df.loc[[batch_idx]]
         time_estimate = _estimate_total_remaining_time(batch_df)
         try:
-            time_estimate_delta = timedelta(seconds=time_estimate)
+            time_estimate_delta = dt.timedelta(seconds=time_estimate)
         except OverflowError:
-            time_estimate_delta = timedelta.max
+            time_estimate_delta = dt.timedelta.max
         output.write(f'Time remaining: ~{time_estimate_delta!s}\n')
+        
+        time_since_last_finish = now - active_file['last file end time']
+        output.write(f'Time since last file: {time_since_last_finish!s}')
 
     return output.getvalue()
     
