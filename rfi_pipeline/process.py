@@ -62,7 +62,7 @@ class BatchJob:
     def run(self):
         self._logger.info(f'Running on batch {self.batch_num}.')
         self._logger.debug(f'That is, {self.batch = }')
-        keep_header = True
+        keep_header = not self.save_path.is_file()
         for i, file in enumerate(self.batch):
             df = None
             try:

@@ -7,7 +7,9 @@ import logging, logging.handlers
 import shutil
 
 from io import TextIOWrapper
+
 import sys
+import os
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -16,7 +18,7 @@ def parse_args() -> argparse.Namespace:
     io_group = parser.add_argument_group('Input and Output')
     io_group.add_argument(
         'infile',
-        type = argparse.FileType('r'),
+        type = Path,
         help = 'Path to a file containing the paths to every .h5 file to be analyzed, separated by newlines.'
     )
     io_group.add_argument(
@@ -28,6 +30,11 @@ def parse_args() -> argparse.Namespace:
         '-f', '--force',
         action = 'store_true',
         help = 'If present and outdir already exists, it will be overwritten.'
+    )
+    io_group.add_argument(
+        '-c', '--resume', '--continue',
+        action='store_true',
+        help='If outdir exists, continue job, starting at the last file that was being processed. Errors out if outdir does not exist.'
     )
 
     processing_group = parser.add_argument_group('Processing')
@@ -144,6 +151,13 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 def make_outdir(args: argparse.Namespace):
+    if args.resume:
+        if args.outdir.is_dir():
+            return
+        else:
+            print(f'{args.outdir!s} does not exist.', file=sys.stderr)
+            sys.exit(1)
+
     try:
         args.outdir.mkdir()
     except FileNotFoundError as e:
@@ -151,7 +165,7 @@ def make_outdir(args: argparse.Namespace):
         exit(1)
     except FileExistsError as e:
         if not args.force:
-            print(e)
+            print(e, file=sys.stderr)
             exit(1)
         else:
             shutil.rmtree(args.outdir)
@@ -160,6 +174,7 @@ def make_outdir(args: argparse.Namespace):
     (args.outdir / 'logs').mkdir()
     (args.outdir / 'batches').mkdir()
 
+    shutil.copyfile(args.infile, args.outdir / 'target-list.txt')
 
 def logging_setup(args: argparse.Namespace):
     logger = logging.getLogger()
@@ -193,8 +208,9 @@ def logging_setup(args: argparse.Namespace):
     logger.addHandler(err_file_handler)
     logger.setLevel(logging.DEBUG)
 
-def get_file_names(file: TextIOWrapper) -> tuple[Path, ...]:
-    lines = file.read().strip().splitlines()
+def get_file_names(file: Path) -> tuple[Path, ...]:
+    with file.open('r') as f:
+        lines = f.readlines()
     paths = map(Path, lines)
     return tuple(paths)
 

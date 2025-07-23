@@ -1,3 +1,5 @@
+import pandas as pd
+
 from .process import BatchJob
 
 from argparse import Namespace
@@ -25,7 +27,8 @@ class Manager:
             num_processes: int, 
             files: tuple[Path, ...], 
             outdir: Path,
-            max_rss: int
+            max_rss: int,
+            resume: bool
     ):
         self.process_params = process_params
         self.num_processes = num_processes
@@ -36,8 +39,13 @@ class Manager:
         self._logger = logging.getLogger(__name__)
         self.max_rss = max_rss
 
-        self._setup_meta()
-        self._setup_progress_file()
+        if not resume:
+            self._setup_meta()
+            self._setup_new_progress_file()
+            self._completed_files: set[Path] = set()
+        else:
+            self._clean_progress_file()
+            self._completed_files = self._get_completed_files()
     
     def _setup_meta(self):
         meta = {
@@ -46,13 +54,34 @@ class Manager:
         with open(self.outdir / 'meta.json', 'w') as f:
             json.dump(meta, f, indent=4)
     
-    def _setup_progress_file(self):
+    def _setup_new_progress_file(self):
         progress_data = [
             {'batch size': len(batch)}
             for batch in self.batches
         ]
         with open(self.outdir / 'progress-data.json', 'w') as f:
             json.dump(progress_data, f, indent=4)
+    
+    def _clean_progress_file(self):
+        data_path = self.outdir / 'progress-data.json'
+        with data_path.open('r') as f:
+            data = json.load(f)
+        
+        for batch_info in data:
+            if 'worker pid' in batch_info:
+                del batch_info['worker pid']
+        
+        with data_path.open('w') as f:
+            json.dump(data, f)
+    
+    def _get_completed_files(self):
+        completed_files: list[Path] = []
+        for batch_csv_path in (self.outdir / 'batches').iterdir():
+            df = pd.read_csv(batch_csv_path, usecols=['source file'])
+
+            # pandas should've used "Callable" here, not func
+            completed_files += list(df['source file'].apply(Path)) #type: ignore
+        return set(completed_files)
 
     @classmethod
     def from_namespace(cls, arg: Namespace, files: tuple[Path, ...]):
@@ -70,7 +99,8 @@ class Manager:
             num_processes=arg.num_processes,
             files=files,
             outdir=arg.outdir,
-            max_rss=arg.max_rss_gb * 1e9
+            max_rss=arg.max_rss_gb * 1e9,
+            resume=arg.resume
         )
     
     @staticmethod
@@ -80,7 +110,7 @@ class Manager:
         logger.handlers.clear()
         logger.addHandler(handler)
 
-        logger.info(f'Initializing worker with {max_memory/1e9 = }GB')
+        logger.info(f'Initializing worker with {max_memory/1e9:.1f}GB')
         resource.setrlimit(resource.RLIMIT_AS, (max_memory, max_memory))
     
     @staticmethod
@@ -105,7 +135,7 @@ class Manager:
 
             batch_args = (
                 {
-                    'batch': batch, 
+                    'batch': tuple(file for file in batch if file not in self._completed_files),
                     'batch_num': i,
                     'process_params': self.process_params,
                     'outdir': self.outdir,
