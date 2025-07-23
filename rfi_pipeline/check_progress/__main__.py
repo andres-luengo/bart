@@ -11,7 +11,7 @@ import pandas as pd
 
 from io import StringIO
 
-import datetime
+from datetime import timedelta
 
 def _parse_args():
     global args
@@ -58,14 +58,17 @@ def _estimate_total_remaining_time(df: pd.DataFrame) -> float:
     # hits/second
     hit_process_rate_est = np.mean(hit_counts / job_durations)
 
-    return hits_remaining_est / hit_process_rate_est
+    # pretend there's only one worker if process is inactive for whatever reason
+    num_workers = max((~df['worker pid'].isna()).sum(), 1)
+
+    return np.divide(hits_remaining_est, hit_process_rate_est) / num_workers
 
 def format_progress_data(data: list[dict[str, Any]]) -> str:
     output = StringIO()
 
     df = pd.DataFrame(
         data, 
-        columns=['worker pid', 'num complete', 'batch size', 'hit counts', 'times finished']
+        columns=['worker pid', 'num complete', 'batch size', 'hit counts', 'times elapsed']
     )
     num_active_workers = (~df['worker pid'].isna()).sum()
     
@@ -79,7 +82,7 @@ def format_progress_data(data: list[dict[str, Any]]) -> str:
     output.write(f'{_progress_bar(percentage)}\n')
 
     time_estimate =_estimate_total_remaining_time(df)
-    output.write(f'Time remaining: ~{time_estimate:.0f}s\n')
+    output.write(f'Time remaining: ~{timedelta(seconds=time_estimate)!s}\n')
 
     output.write(f'\nWORKERS\n')
     for batch_idx, active_file in df[~df['worker pid'].isna()].iterrows():
