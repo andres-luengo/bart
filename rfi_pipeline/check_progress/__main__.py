@@ -31,11 +31,11 @@ def _get_progress_data():
         data = json.load(f)
     return data
 
-def _progress_bar(percentage: float) -> str:
-    bar = '=' * min(int(percentage * 100), 100)
-    if percentage % 1 >= 0.5:
+def _progress_bar(percentage: float, width: int = 50) -> str:
+    bar = '=' * min(int(percentage * width), width)
+    if (percentage * width) % 1 >= 0.5:
         bar += '-'
-    bar += ' ' * (100 - len(bar))
+    bar += ' ' * (width - len(bar))
     return f'[{bar}]'
 
 def _estimate_total_remaining_time(df: pd.DataFrame) -> float:
@@ -48,6 +48,11 @@ def _estimate_total_remaining_time(df: pd.DataFrame) -> float:
     # seconds
     job_durations = np.hstack(df['times elapsed'].dropna()) #type: ignore
     
+    # want to ignore failed files in calculations
+    valid_mask = (hit_counts >= 0)
+    hit_counts = hit_counts[valid_mask]
+    job_durations = job_durations[valid_mask]
+
     hits_remaining_est = np.mean(hit_counts) * num_remaining_files
     
     # hits/second
@@ -73,8 +78,10 @@ def format_progress_data(data: list[dict[str, Any]]) -> str:
     output.write(f'Total progress: {num_all_complete:,d}/{num_all_files:,d} ({percentage:.2%})\n')
     output.write(f'{_progress_bar(percentage)}\n')
 
+    time_estimate =_estimate_total_remaining_time(df)
+    output.write(f'Time remaining: ~{time_estimate:.0f}s\n')
 
-    output.write(f'\nALL WORKERS\n')
+    output.write(f'\nWORKERS\n')
     for batch_idx, active_file in df[~df['worker pid'].isna()].iterrows():
         output.write(f'PID {int(active_file['worker pid'])}\n')
         output.write(f'batch {batch_idx}\n')
@@ -85,7 +92,7 @@ def format_progress_data(data: list[dict[str, Any]]) -> str:
         output.write(f'Total progress: {num_complete:,d}/{batch_size:,d} ({percentage:.2%})\n')
         output.write(f'{_progress_bar(percentage)}\n')
 
-    return output.getvalue().strip()
+    return output.getvalue()
     
 def main():
     _parse_args()
