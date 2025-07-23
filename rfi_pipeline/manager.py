@@ -1,6 +1,6 @@
 import pandas as pd
 
-from .process import BatchJob
+from .batchjob import BatchJob
 
 from argparse import Namespace
 from pathlib import Path

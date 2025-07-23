@@ -10,6 +10,7 @@ __author__ = "Breakthrough Listen"
 __description__ = "Radio Frequency Interference Detection Pipeline"
 
 from .manager import Manager
-from .process import BatchJob, FileJob
+from .batchjob import BatchJob
+from .filejob import FileJob
 
 __all__ = ["Manager", "BatchJob", "FileJob"]
