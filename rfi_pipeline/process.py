@@ -14,6 +14,7 @@ from typing import Any
 from threading import Lock
 
 import time
+import datetime
 
 import re
 
@@ -26,12 +27,9 @@ logging.getLogger('numba').setLevel(logging.WARNING)
 
 from contextlib import contextmanager
 import json
+MAX_PROGRESS_LIST_LENGTH = 16
 
 import os
-
-# things to think about:
-# DC spikes
-# numba
 
 class BatchJob:
     def __init__(
@@ -55,13 +53,17 @@ class BatchJob:
         self._progress_data_path = outdir / 'progress-data.json'
 
         with self.get_progress_data() as progress_data:
-            progress_data[self.batch_num]['worker pid'] = os.getpid()
+            batch_data = progress_data[self.batch_num]
+            batch_data['worker pid'] = os.getpid()
+            batch_data['batch size'] = len(self.batch)
+            batch_data['num complete'] = 0
     
     def run(self):
         self._logger.info(f'Running on batch {self.batch_num}.')
         self._logger.debug(f'That is, {self.batch = }')
         keep_header = True
         for i, file in enumerate(self.batch):
+            df = None
             try:
                 df = FileJob(file, self.process_params).run()
             except Exception:
@@ -72,12 +74,40 @@ class BatchJob:
                 if keep_header:
                     self._logger.info(f'Saved to {self.save_path}.')
                     keep_header = False
+
+            self._filejob_update_progress(i, df)
+        
+        with self.get_progress_data() as progress_data:
+            del progress_data[self.batch_num]['worker pid']
+    
+    def _filejob_update_progress(self, i: int, df: pd.DataFrame | None):
+        with self.get_progress_data() as progress_data:
+            batch_progress = progress_data[self.batch_num]
             
-            with self.get_progress_data() as progress_data:
-                progress_data[self.batch_num]['num complete'] = i + 1
+            batch_progress['num complete'] = i + 1
+            
+            if 'times finished' not in batch_progress: 
+                batch_progress['times finished'] = []
+            times: list[str] = batch_progress['times finished']
+            times.append(datetime.datetime.now(datetime.UTC).isoformat())
+            if len(times) > MAX_PROGRESS_LIST_LENGTH:
+                times.pop(0)
+            
+            if 'hit counts' not in batch_progress: 
+                batch_progress['hit counts'] = []
+            hit_counts: list[int] = batch_progress['hit counts']
+            if df is None: # something went wrong
+                hit_counts.append(-1)
+            elif df.iloc[0]['flags'] == 'EMPTY FILE':
+                hit_counts.append(0)
+            else:
+                hit_counts.append(len(df))
+            if len(hit_counts) > MAX_PROGRESS_LIST_LENGTH:
+                hit_counts.pop(0)
     
     @contextmanager
     def get_progress_data(self):
+        # context manager mania
         with self._progress_lock:
             with self._progress_data_path.open('r') as f:
                 progress_data: list[dict[str, Any]] = json.load(f)
@@ -85,7 +115,7 @@ class BatchJob:
             yield progress_data
 
             with self._progress_data_path.open('w') as f:
-                json.dump(progress_data, f)
+                json.dump(progress_data, f, indent=4)
 
 # these are run serially within each process, but the OOP makes things neat
 class FileJob:

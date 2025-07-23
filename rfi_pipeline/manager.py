@@ -48,10 +48,9 @@ class Manager:
     
     def _setup_progress_file(self):
         progress_data = [
-            {'num_complete': 0, 'batch_length': len(batch)}
+            {'batch size': len(batch)}
             for batch in self.batches
         ]
-        
         with open(self.outdir / 'progress-data.json', 'w') as f:
             json.dump(progress_data, f, indent=4)
 

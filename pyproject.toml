@@ -58,6 +58,7 @@ Repository = "https://github.com/breakthrough-listen/rfi-pipeline"
 
 [project.scripts]
 rfi-pipeline = "rfi_pipeline.__main__:main"
+rfi-pipeline-progress = "rfi_pipeline.check_progress.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
