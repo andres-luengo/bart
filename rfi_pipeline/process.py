@@ -80,6 +80,7 @@ class BatchJob:
         
         with self.get_progress_data() as progress_data:
             del progress_data[self.batch_num]['worker pid']
+            progress_data[self.batch_num]['num complete'] = len(self.batch)
     
     def _filejob_update_progress(self, i: int, df: pd.DataFrame | None):
         with self.get_progress_data() as progress_data:
