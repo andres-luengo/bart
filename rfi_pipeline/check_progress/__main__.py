@@ -136,12 +136,6 @@ def format_progress_data(data: list[dict[str, Any]]) -> str:
 def main():
     _parse_args()
     data = _get_progress_data()
-    try:
-        while True:
-            sys.stdout.truncate(0)
-            print(format_progress_data(data))
-            sleep(0.1)
-    except KeyboardInterrupt:
-        pass
+    print(format_progress_data(data))
 
 if __name__ == '__main__': main()
