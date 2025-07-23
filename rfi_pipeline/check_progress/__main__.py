@@ -122,7 +122,7 @@ def format_progress_data(data: list[dict[str, Any]]) -> str:
             time_estimate_delta = dt.timedelta.max
         output.write(f'Time remaining: ~{time_estimate_delta!s}\n')
         
-        time_since_last_finish = now - active_file['last file end time']
+        time_since_last_finish = now - dt.datetime.fromisoformat(active_file['last file end time'])
         output.write(f'Time since last file: {time_since_last_finish!s}')
 
     return output.getvalue()
