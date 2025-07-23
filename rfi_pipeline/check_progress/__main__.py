@@ -104,6 +104,7 @@ def format_progress_data(data: list[dict[str, Any]]) -> str:
     output.write(f'Time since last finish: {time_since_last_finish!s}\n')
 
     output.write(f'\nWORKERS\n')
+    output.write(   '=======\n')
     for batch_idx, active_file in df[~df['worker pid'].isna()].iterrows():
         output.write(f'PID {int(active_file['worker pid'])}\n')
         output.write(f'batch {batch_idx}\n')
@@ -123,7 +124,9 @@ def format_progress_data(data: list[dict[str, Any]]) -> str:
         output.write(f'Time remaining: ~{time_estimate_delta!s}\n')
         
         time_since_last_finish = now - dt.datetime.fromisoformat(active_file['last file end time'])
-        output.write(f'Time since last file: {time_since_last_finish!s}')
+        output.write(f'Time since last file: {time_since_last_finish!s}\n')
+
+        output.write('\n')
 
     return output.getvalue()
     
