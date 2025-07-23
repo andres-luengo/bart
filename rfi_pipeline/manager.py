@@ -28,7 +28,6 @@ class Manager:
             files: tuple[Path, ...], 
             outdir: Path,
             max_rss: int,
-            resume: bool
     ):
         self.process_params = process_params
         self.num_processes = num_processes
@@ -39,13 +38,14 @@ class Manager:
         self._logger = logging.getLogger(__name__)
         self.max_rss = max_rss
 
-        if not resume:
-            self._setup_meta()
-            self._setup_new_progress_file()
-            self._completed_files: set[Path] = set()
-        else:
+        self._setup_meta()
+
+        if (self.outdir / 'progress-data.json').is_file():
             self._clean_progress_file()
-            self._completed_files = self._get_completed_files()
+        else:
+            self._setup_new_progress_file()
+
+        self._completed_files = self._get_completed_files()
     
     def _setup_meta(self):
         meta = {
@@ -78,9 +78,7 @@ class Manager:
         completed_files: list[Path] = []
         for batch_csv_path in (self.outdir / 'batches').iterdir():
             df = pd.read_csv(batch_csv_path, usecols=['source file'])
-
-            # pandas should've used "Callable" here, not func
-            completed_files += list(df['source file'].apply(Path)) #type: ignore
+            completed_files += list(map(Path, df['source file'].unique()))
         return set(completed_files)
 
     @classmethod
@@ -100,7 +98,6 @@ class Manager:
             files=files,
             outdir=arg.outdir,
             max_rss=arg.max_rss_gb * 1e9,
-            resume=arg.resume
         )
     
     @staticmethod
