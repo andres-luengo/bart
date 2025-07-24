@@ -95,6 +95,63 @@ manager = Manager(
 manager.run()
 ```
 
+### Merge Tool
+
+After running the main RFI pipeline, you can merge all batch results into a single file using the merge tool:
+
+#### Command Line Interface
+```bash
+rfi-pipeline-merge rundir [outdir] [options]
+```
+
+#### Examples
+```bash
+# Merge batches in run directory to the same directory
+rfi-pipeline-merge /path/to/pipeline/output
+
+# Merge to custom output directory
+rfi-pipeline-merge /path/to/pipeline/output /path/to/merged/results
+
+# Compress output and use verbose logging
+rfi-pipeline-merge /path/to/pipeline/output --compress --verbose
+
+# Output in different formats
+rfi-pipeline-merge /path/to/pipeline/output --format parquet --compress
+```
+
+#### Parameters
+- `rundir`: Path to RFI pipeline output directory (must contain `batches/` subdirectory)
+- `outdir`: Output directory for merged data (optional, defaults to the run directory itself)
+- `-f, --force`: Overwrite existing output files without confirmation
+- `-v, --verbose`: Increase verbosity level (use `-vv` for debug output)
+- `--format`: Output format: `csv` (default), `parquet`, or `hdf5`
+- `--sort-by`: Column to sort merged data by (default: `frequency`)
+- `--compress`: Compress output file (format-dependent compression)
+
+#### Python API
+```python
+from pathlib import Path
+from rfi_pipeline.merge import merge_rfi_run
+
+# Merge batch files programmatically
+output_path = merge_rfi_run(
+    rundir=Path("/path/to/pipeline/output"),
+    outdir=Path("/path/to/merged/results"),  # Optional, defaults to rundir
+    format_type='csv',
+    compress=True,
+    sort_by='frequency',
+    force=True
+)
+print(f"Merged data saved to: {output_path}")
+```
+
+The merge tool will:
+- Combine all `batch_*.csv` files from the `batches/` directory
+- Add a `batch_number` column to track the source batch
+- Sort the data by the specified column (default: frequency)
+- Update the existing `meta.json` file with merge information
+- Support multiple output formats with optional compression
+
 ## Algorithm
 
 The RFI detection algorithm works in two stages:
