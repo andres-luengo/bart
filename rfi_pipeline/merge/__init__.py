@@ -16,7 +16,8 @@ import logging
 
 def merge_rfi_run(rundir: Path, outdir: Optional[Path] = None, 
                  format_type: str = 'csv', compress: bool = False,
-                 sort_by: str = 'frequency', force: bool = False) -> Path:
+                 sort_by: str = 'frequency', force: bool = False,
+                 read_only: bool = False) -> Path:
     """
     Merge batch CSV files from an RFI pipeline run into a single output file.
     
@@ -27,6 +28,7 @@ def merge_rfi_run(rundir: Path, outdir: Optional[Path] = None,
         compress: Whether to compress the output
         sort_by: Column to sort by
         force: Whether to overwrite existing files
+        read_only: If True, do not modify the original meta.json file (safe for active runs)
         
     Returns:
         Path to the merged output file
@@ -59,7 +61,7 @@ def merge_rfi_run(rundir: Path, outdir: Optional[Path] = None,
     # Save merged data
     save_merged_data(
         merged_df, outdir, format_type, compress, 
-        sort_by, force, metadata, logger
+        sort_by, force, metadata, read_only, logger
     )
     
     # Return path to output file

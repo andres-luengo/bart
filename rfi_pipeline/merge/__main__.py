@@ -59,6 +59,12 @@ def parse_args() -> argparse.Namespace:
         help='Compress output file (format-dependent compression)'
     )
     
+    parser.add_argument(
+        '--read-only',
+        action='store_true',
+        help='Read-only mode: do not modify the original meta.json file. Safe for active runs.'
+    )
+    
     return parser.parse_args()
 
 
@@ -176,7 +182,7 @@ def merge_batch_files(batch_files: list[Path], logger: logging.Logger) -> pd.Dat
 
 def save_merged_data(df: pd.DataFrame, outdir: Path, format_type: str, 
                     compress: bool, sort_by: str, force: bool, 
-                    metadata: Optional[dict], logger: logging.Logger) -> None:
+                    metadata: Optional[dict], read_only: bool, logger: logging.Logger) -> None:
     """Save merged DataFrame to output file."""
     
     # Create output directory
@@ -243,7 +249,7 @@ def save_merged_data(df: pd.DataFrame, outdir: Path, format_type: str,
         df.to_hdf(output_path, key='data', mode='w', complevel=complevel, complib='zlib')
     
     # Update existing metadata with merge information
-    if metadata:
+    if metadata and not read_only:
         meta_file = outdir / 'meta.json'
         
         # Create merge information
@@ -265,6 +271,32 @@ def save_merged_data(df: pd.DataFrame, outdir: Path, format_type: str,
             json.dump(updated_metadata, f, indent=2)
         
         logger.info(f"Updated metadata in {meta_file}")
+    elif metadata and read_only:
+        # In read-only mode, save metadata separately
+        metadata_file = outdir / 'merge_metadata.json'
+        
+        # Create merge information
+        merge_info = {
+            'merged_at': pd.Timestamp.now().isoformat(),
+            'total_rows': len(df),
+            'output_format': format_type,
+            'compressed': compress,
+            'sorted_by': sort_by if sort_by in df.columns else None,
+            'merged_file': filename
+        }
+        
+        # Create separate metadata file with original + merge info
+        combined_metadata = {
+            'original_run_metadata': metadata,
+            'merge_info': merge_info
+        }
+        
+        with open(metadata_file, 'w') as f:
+            json.dump(combined_metadata, f, indent=2)
+        
+        logger.info(f"Saved merge metadata to {metadata_file} (read-only mode)")
+    elif read_only:
+        logger.info("Read-only mode: skipping metadata modification")
     
     logger.info(f"Successfully saved {len(df)} rows to {output_path}")
 
@@ -304,7 +336,7 @@ def main():
         # Save merged data
         save_merged_data(
             merged_df, outdir, args.format, args.compress, 
-            args.sort_by, args.force, metadata, logger
+            args.sort_by, args.force, metadata, args.read_only, logger
         )
         
         logger.info("Merge completed successfully!")
