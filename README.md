@@ -95,6 +95,39 @@ manager = Manager(
 manager.run()
 ```
 
+### Progress Monitoring
+
+Monitor the progress of a running RFI pipeline in real-time:
+
+#### Command Line Interface
+```bash
+rfi-pipeline-progress rundir [options]
+```
+
+#### Examples
+```bash
+# Check progress once and exit
+rfi-pipeline-progress /path/to/pipeline/output
+
+# Monitor continuously with 5-second updates
+rfi-pipeline-progress /path/to/pipeline/output --update-interval 5
+
+# Force single run (useful when you want to override default behavior)
+rfi-pipeline-progress /path/to/pipeline/output --once
+```
+
+#### Parameters
+- `rundir`: Path to the RFI pipeline output directory
+- `--update-interval SECONDS`: Update interval in seconds for continuous monitoring. If 0 or not specified, run once and exit
+- `--once`: Run once and exit (overrides --update-interval)
+
+The progress monitor displays:
+- Number of active workers
+- Overall progress with percentage and visual progress bar
+- Estimated time remaining
+- Time since last file completion
+- Individual worker progress and statistics
+
 ### Merge Tool
 
 After running the main RFI pipeline, you can merge all batch results into a single file using the merge tool:
