@@ -112,14 +112,18 @@ rfi-pipeline-progress /path/to/pipeline/output
 # Monitor continuously with 5-second updates
 rfi-pipeline-progress /path/to/pipeline/output --update-interval 5
 
+# Monitor without screen clearing (useful for SSH terminals)
+rfi-pipeline-progress /path/to/pipeline/output -n 3 --no-clear
+
 # Force single run (useful when you want to override default behavior)
 rfi-pipeline-progress /path/to/pipeline/output --once
 ```
 
 #### Parameters
 - `rundir`: Path to the RFI pipeline output directory
-- `--update-interval SECONDS`: Update interval in seconds for continuous monitoring. If 0 or not specified, run once and exit
+- `-n, --update-interval SECONDS`: Update interval in seconds for continuous monitoring. If 0 or not specified, run once and exit
 - `--once`: Run once and exit (overrides --update-interval)
+- `--no-clear`: Disable screen clearing between updates (useful for some SSH terminals)
 
 The progress monitor displays:
 - Number of active workers

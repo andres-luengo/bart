@@ -16,6 +16,8 @@ from time import sleep
 
 import sys
 
+import subprocess
+
 def _parse_args():
     global args
 
@@ -39,6 +41,12 @@ def _parse_args():
         action='store_true',
         help='Run once and exit (overrides --update-interval)'
     )
+    
+    parser.add_argument(
+        '--no-clear',
+        action='store_true',
+        help='Disable screen clearing between updates (useful for some SSH terminals)'
+    )
 
     args = parser.parse_args()
 
@@ -46,6 +54,28 @@ def _get_progress_data():
     with (args.rundir / 'progress-data.json').open('r') as f:
         data = json.load(f)
     return data
+
+def _clear_screen():
+    """Clear the terminal screen using the most compatible method available"""
+    try:
+        # Try using the system's clear command first (most reliable)
+        subprocess.run(['clear'], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        try:
+            # Fallback to cls for Windows
+            subprocess.run(['cls'], check=True, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            try:
+                # Try using os.system as another fallback
+                import os
+                os.system('clear 2>/dev/null || printf "\\033[2J\\033[H"')
+            except:
+                try:
+                    # Fallback: ANSI escape sequences with explicit flush
+                    print('\033[2J\033[H', end='', flush=True)
+                except:
+                    # Last resort: print newlines to simulate clearing
+                    print('\n' * 50)
 
 def _progress_bar(percentage: float, width: int = 50) -> str:
     bar = '=' * min(int(percentage * width), width)
@@ -175,8 +205,12 @@ def main():
     # Continuous monitoring mode
     try:
         while True:
-            # Clear the screen (works on most terminals)
-            print('\033[2J\033[H', end='')
+            # Clear the screen using the most compatible method (unless disabled)
+            if not args.no_clear:
+                _clear_screen()
+            else:
+                # Just add some separation when screen clearing is disabled
+                print("-" * 60)
             
             try:
                 data = _get_progress_data()
