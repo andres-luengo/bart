@@ -200,3 +200,5 @@ INSTALLATION_GUIDE.md
 # test run stuff
 experiments/test_*
 experiments/*images/*
+
+example-partial-data
