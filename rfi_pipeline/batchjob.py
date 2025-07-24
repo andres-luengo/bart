@@ -55,6 +55,7 @@ class BatchJob:
                 df = FileJob(file, self.process_params).run()
             except Exception:
                 self._logger.error(f'Something went wrong on file {file}!', exc_info=True)
+                df = None
             else:
                 df['source file'] = str(file)
                 df.to_csv(self.save_path, header=keep_header, mode='a', index=False)
