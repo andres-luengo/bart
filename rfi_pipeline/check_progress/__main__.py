@@ -116,14 +116,24 @@ def _estimate_total_remaining_time(df: pd.DataFrame) -> float:
     job_durations = np.hstack(job_duration_lists) #type: ignore
     
     # want to ignore failed files in calculations
-    valid_mask = (hit_counts >= 0)
+    valid_mask = (hit_counts >= 0) & (job_durations > 0)
     hit_counts = hit_counts[valid_mask]
     job_durations = job_durations[valid_mask]
+    
+    if len(hit_counts) == 0:
+        return np.inf
 
     hits_remaining_est = np.mean(hit_counts) * num_remaining_files
     
-    # hits/second
-    hit_process_rate_est = np.mean(hit_counts / job_durations)
+    # Calculate the correct processing rate: total hits processed / total time spent
+    # This properly weights files by their contribution to the total work
+    total_hits_processed = np.sum(hit_counts)
+    total_time_spent = np.sum(job_durations)
+    
+    if total_time_spent == 0 or total_hits_processed == 0:
+        return np.inf
+    
+    hit_process_rate_est = total_hits_processed / total_time_spent
 
     # pretend there's only one worker if process is inactive for whatever reason
     num_workers = max((~df['worker pid'].isna()).sum(), 1)
