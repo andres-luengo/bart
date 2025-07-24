@@ -17,6 +17,10 @@ import os
 
 from .filejob import FileJob
 
+# stuff to think about:
+# - SIGINT
+# - getting rid of gaussian fitting step
+
 class BatchJob:
     def __init__(
             self, *,
