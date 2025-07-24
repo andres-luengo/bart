@@ -108,6 +108,33 @@ def format_progress_data(data: list[dict[str, Any]]) -> str:
         columns=['worker pid', 'num complete', 'batch size', 'hit counts', 
                  'times elapsed', 'last file end time']
     )
+    now = dt.datetime.now(dt.timezone.utc)
+
+    for batch_idx, active_file in df[~df['worker pid'].isna()].iterrows():
+        output.write(f'PID {int(active_file['worker pid'])}\n')
+        output.write(f'batch {batch_idx}\n')
+        
+        num_complete = int(active_file['num complete'])
+        batch_size = int(max(active_file['batch size'], 1))
+        percentage = num_complete / batch_size
+        output.write(f'Total progress: {num_complete:,d}/{batch_size:,d} ({percentage:.2%})\n')
+        output.write(f'{_progress_bar(percentage)}\n')
+
+        batch_df = df.loc[[batch_idx]]
+        time_estimate = _estimate_total_remaining_time(batch_df)
+        try:
+            time_estimate_delta = dt.timedelta(seconds=time_estimate)
+        except OverflowError:
+            time_estimate_delta = dt.timedelta.max
+        output.write(f'Time remaining: ~{_format_timedelta(time_estimate_delta)}\n')
+        
+        time_since_last_finish = now - dt.datetime.fromisoformat(active_file['last file end time'])
+        output.write(f'Time since last file: {_format_timedelta(time_since_last_finish)}\n')
+
+        output.write('\n')
+    
+    output.write(f'\nSUMMARY\n')
+    output.write(   '=======\n')
     num_active_workers = (~df['worker pid'].isna()).sum()
     
     output.write(f'Number of active workers: {num_active_workers:n}\n')
@@ -131,34 +158,8 @@ def format_progress_data(data: list[dict[str, Any]]) -> str:
                                .dropna()
                                .apply(dt.datetime.fromisoformat)
                                .max())
-    now = dt.datetime.now(dt.timezone.utc)
     time_since_last_finish = now - latest_file_finish_time
     output.write(f'Time since last finish: {_format_timedelta(time_since_last_finish)}\n')
-
-    output.write(f'\nWORKERS\n')
-    output.write(   '=======\n')
-    for batch_idx, active_file in df[~df['worker pid'].isna()].iterrows():
-        output.write(f'PID {int(active_file['worker pid'])}\n')
-        output.write(f'batch {batch_idx}\n')
-        
-        num_complete = int(active_file['num complete'])
-        batch_size = int(max(active_file['batch size'], 1))
-        percentage = num_complete / batch_size
-        output.write(f'Total progress: {num_complete:,d}/{batch_size:,d} ({percentage:.2%})\n')
-        output.write(f'{_progress_bar(percentage)}\n')
-
-        batch_df = df.loc[[batch_idx]]
-        time_estimate = _estimate_total_remaining_time(batch_df)
-        try:
-            time_estimate_delta = dt.timedelta(seconds=time_estimate)
-        except OverflowError:
-            time_estimate_delta = dt.timedelta.max
-        output.write(f'Time remaining: ~{_format_timedelta(time_estimate_delta)}\n')
-        
-        time_since_last_finish = now - dt.datetime.fromisoformat(active_file['last file end time'])
-        output.write(f'Time since last file: {_format_timedelta(time_since_last_finish)}\n')
-
-        output.write('\n')
 
     return output.getvalue()
     
