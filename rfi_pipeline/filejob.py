@@ -61,12 +61,12 @@ class FileJob:
         self._min_channel = 0
         if np.isfinite(process_params['max_freq']):
             self._min_channel = round((process_params['max_freq'] - self._fch1) / self._foff)
-            self._min_channel = max(self._min_channel, 0)
+            self._min_channel = min(max(self._min_channel, 0), self._data.shape[2])
 
         self._max_channel = self._data.shape[2]
         if np.isfinite(process_params['min_freq']):
             self._max_channel = round((process_params['min_freq'] - self._fch1) / self._foff)
-            self._max_channel = min(self._max_channel, self._data.shape[2])
+            self._max_channel = max(min(self._max_channel, self._data.shape[2]), 0)
 
         self._logger.debug(f'Running on {self._max_channel - self._min_channel} channels, {(self._max_channel - self._min_channel) / self._data.shape[2]:.2%} of the data.')
                 
