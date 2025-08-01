@@ -23,6 +23,12 @@ import scipy.optimize
 from numba import njit
 logging.getLogger('numba').setLevel(logging.WARNING)
 
+# stuff to think about
+# - load in big files in sections (not all at once)
+# - only fit middle slice (or a few)
+# - multiple signals? count_peaks?
+# - bliss
+# - just find width at half max 
 
 # these are run serially within each process, but the OOP makes things neat
 class FileJob:
