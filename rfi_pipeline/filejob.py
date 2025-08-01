@@ -18,8 +18,6 @@ import re
 
 import warnings
 
-import scipy.optimize
-
 from numba import njit
 logging.getLogger('numba').setLevel(logging.WARNING)
 
@@ -254,9 +252,9 @@ class FileJob:
             self.smooth_dc_spike(block, block_l_index)
 
             fit_start_time = time.perf_counter()
-            params, _ = self.fit_frequency_gaussians(freq_array, block)
+            params = self.fit_frequency_thresholds(freq_array, block)
             fit_end_time = time.perf_counter()
-            self._logger.debug(f'Done fitting Gaussians, took {fit_end_time - fit_start_time:.3g}s.')
+            self._logger.debug(f'Done threshold-based estimation, took {fit_end_time - fit_start_time:.3g}s.')
             
             nan_mask = np.isnan(params).any(axis=1)
             num_nan_fits = np.sum(nan_mask)
@@ -267,9 +265,13 @@ class FileJob:
             valid_mask = ~nan_mask
             if np.any(valid_mask):
                 means = params[valid_mask, 0]
-                stds = params[valid_mask, 1]
+                widths = params[valid_mask, 1]  # width in frequency units (already converted)
                 amps = params[valid_mask, 2]
                 noise_baselines = params[valid_mask, 3]
+
+                # For threshold method, width is already in appropriate units
+                # Convert back to bins for consistency with original code
+                width_bins = widths / np.abs(self._foff)
 
                 # P_signal = amp * std * sqrt(2pi)
                 # P_noise = C * 'signal width' = C * 2 * sqrt(2ln2) * std
@@ -285,7 +287,7 @@ class FileJob:
 
                 # a bit more resilient for having a handful of bad time slices
                 mean = np.median(means)
-                width = 2.355 * np.mean(stds) # stdev to FWHM
+                width = np.mean(width_bins) # use threshold-based width directly (in bins)
                 snr = np.mean(snrs)
 
                 max_snr = np.max(snrs)
@@ -333,51 +335,33 @@ class FileJob:
 
         return rows
 
-    def fit_frequency_gaussians(self, freq_array: np.ndarray, block: np.ndarray):
+    def fit_frequency_thresholds(self, freq_array: np.ndarray, block: np.ndarray):
         """
-        Fits a Gaussian to each frequency slice of the block.
-        Returns parameters and covariance for each slice, with dimensions (num_slices, 4) and (num_slices, 4, 4).
-        Failed fits result in NaN parameters for that slice."""
+        Applies threshold-based width estimation to each frequency slice of the block.
+        Returns parameters for each slice, with dimensions (num_slices, 4).
+        Failed estimations result in NaN parameters for that slice.
+        """
         all_params = []
-        all_covs = []
         for i in range(block.shape[0]):
             slice_data = block[i, :]
             try:
-                with warnings.catch_warnings():
-                    warnings.filterwarnings('error')
-                    params, cov = self.fit_gaussian_to_slice(freq_array, slice_data)
-            except (RuntimeError, ValueError, scipy.optimize.OptimizeWarning):
-                # Return NaN parameters for failed fits
+                # Get threshold-based parameters
+                mean_freq_idx, width, amplitude, noise_floor = threshold_based_width_estimation(slice_data)
+                
+                if np.isnan(mean_freq_idx):
+                    params = np.full((4,), np.nan)
+                else:
+                    # Convert frequency index to actual frequency
+                    mean_freq = freq_array[int(mean_freq_idx)]
+                    # Convert width from bins to frequency units (like stdev in Gaussian)
+                    width_freq = width * np.abs(self._foff)
+                    params = np.array([mean_freq, width_freq, amplitude, noise_floor])
+            except:
+                # Return NaN parameters for failed estimations
                 params = np.full((4,), np.nan)
-                cov = np.full((4, 4), np.nan)
             all_params.append(params)
-            all_covs.append(cov)
-        params = np.array(all_params)
-        covs = np.array(all_covs)
-        return params, covs
+        return np.array(all_params)
     
-    def fit_gaussian_to_slice(self, freq_array: np.ndarray, slice_data: np.ndarray):
-        return scipy.optimize.curve_fit(
-            signal_model, 
-            freq_array, 
-            slice_data, 
-            p0=[
-                freq_array[np.argmax(slice_data)], 
-                np.abs(self._foff),
-                np.max((np.max(slice_data) - np.median(slice_data), np.std(slice_data))),
-                np.median(slice_data)
-            ],
-            # slow, screws up scale for some signals
-            # can't really know if we got a fit that makes any sense otherwise...
-            bounds=np.array([
-                (freq_array[-1], freq_array[0]),
-                (0, np.inf),
-                (np.median(slice_data) * 0.25, np.inf),
-                (0, np.inf)
-            ]).T,
-            max_nfev=10_000
-        )
-
     def index_to_frequency(self, index: int):
         return self._fch1 + index * self._foff
 
@@ -389,3 +373,60 @@ class FileJob:
 def signal_model(x, mean, stdev, amplitude, noise):
     exponent = -0.5 * ((x - mean) / stdev)**2
     return noise + amplitude * np.exp(exponent)
+
+@njit
+def threshold_based_width_estimation(spectrum):
+    """
+    Threshold-based width estimation
+    
+    Find noise floor using sigma clipping, calculate middle point between noise and peak,
+    then find width where signal drops below this threshold.
+    """
+    data = spectrum.copy()
+    for _ in range(16): 
+        mean_val = np.mean(data)
+        std_val = np.std(data)
+        lower_bound = mean_val - 2.0 * std_val
+        upper_bound = mean_val + 2.0 * std_val
+        
+        mask = (data >= lower_bound) & (data <= upper_bound)
+        if np.sum(mask) == 0: 
+            break
+        data = data[mask]
+
+    noise_floor = np.median(data)
+    
+    # Find peak
+    peak_value = np.max(spectrum)
+    peak_idx = np.argmax(spectrum)
+    
+    # Calculate threshold (middle point between noise and peak)
+    threshold = (noise_floor + peak_value) / 2
+    
+    # Find points above threshold around the peak
+    above_threshold = spectrum > threshold
+    
+    if not np.any(above_threshold):
+        return np.nan, np.nan, np.nan, np.nan
+    
+    # Find the contiguous region around the peak (brightest signal)
+    # Start from the peak and expand left and right while above threshold
+    left_idx = peak_idx
+    right_idx = peak_idx
+    
+    # Expand left from peak
+    while left_idx > 0 and above_threshold[left_idx - 1]:
+        left_idx -= 1
+    
+    # Expand right from peak  
+    while right_idx < len(spectrum) - 1 and above_threshold[right_idx + 1]:
+        right_idx += 1
+    
+    # Calculate width of this contiguous region
+    width = right_idx - left_idx + 1
+    
+    # Return parameters similar to what Gaussian fit would return
+    # (mean, width, amplitude, noise_floor)
+    amplitude = peak_value - noise_floor
+    
+    return float(peak_idx), float(width), float(amplitude), float(noise_floor)
