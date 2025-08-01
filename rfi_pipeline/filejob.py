@@ -245,11 +245,18 @@ class FileJob:
                 self._fch1 + right * self._foff,
                 num=self._frequency_window_size
             )
-
+            load_start_time = time.perf_counter()
             block = data[:, 0, left:right]
+            load_end_time = time.perf_counter()
+
+            self._logger.debug(f'Done loading block, took {load_end_time - load_start_time:.3g}s.')
+
             self.smooth_dc_spike(block, block_l_index)
-            
+
+            fit_start_time = time.perf_counter()
             params, _ = self.fit_frequency_gaussians(freq_array, block)
+            fit_end_time = time.perf_counter()
+            self._logger.debug(f'Done fitting Gaussians, took {fit_end_time - fit_start_time:.3g}s.')
             
             nan_mask = np.isnan(params).any(axis=1)
             num_nan_fits = np.sum(nan_mask)
