@@ -15,6 +15,8 @@ from typing import Any
 
 import resource
 
+import datetime as dt
+
 # splits up files into batches
 # does multiprocessing stuff
 # manages file nonsense
@@ -49,6 +51,7 @@ class Manager:
     
     def _setup_meta(self):
         meta = {
+            'start_time': dt.datetime.now(dt.timezone.utc).isoformat(),
             'outdir': str(self.outdir)
         } | self.process_params
         with open(self.outdir / 'meta.json', 'w') as f:

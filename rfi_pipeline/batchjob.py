@@ -176,14 +176,14 @@ class BatchJob:
             else:
                 num_hits = len(df)
         
-        # Get current UNIX timestamp
-        unix_time_completed = time.time()
+        # Get current time in ISO format (UTC timezone)
+        iso_time_completed = dt.datetime.now(dt.timezone.utc).isoformat()
         
         # Create row data
         row_data = {
             'file': str(file),
             'num_hits': num_hits,
-            'unix_time_completed': unix_time_completed
+            'time_completed': iso_time_completed
         }
         
         # Add header information if available
