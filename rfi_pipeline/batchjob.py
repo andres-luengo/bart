@@ -14,6 +14,10 @@ import json
 MAX_PROGRESS_LIST_LENGTH = 16
 
 import os
+import time
+
+import hdf5plugin # dumb
+import h5py
 
 from .filejob import FileJob
 
@@ -38,6 +42,7 @@ class BatchJob:
         self.batch_num = batch_num
 
         self.save_path = outdir / 'batches' / f'batch_{batch_num:>03}.csv'
+        self.files_csv_path = outdir / 'files.csv'
 
         self._progress_lock = progress_lock
         self._progress_data_path = outdir / 'progress-data.json'
@@ -55,7 +60,11 @@ class BatchJob:
         keep_header = not self.save_path.is_file()
         for i, file in enumerate(self.batch):
             df = None
+            file_info = None
+            
             try:
+                # Extract file header information
+                file_info = self._extract_file_info(file)
                 df = FileJob(file, self.process_params).run()
             except Exception:
                 self._logger.error(f'Something went wrong on file {file}!', exc_info=True)
@@ -67,6 +76,8 @@ class BatchJob:
                     self._logger.info(f'Saved to {self.save_path}.')
                     keep_header = False
 
+            # Update files.csv with file information
+            self._update_files_csv(file, df, file_info)
             self._filejob_update_progress(i, df)
         
         with self.get_progress_data() as progress_data:
@@ -102,6 +113,107 @@ class BatchJob:
                 hit_counts.append(len(df))
             if len(hit_counts) > MAX_PROGRESS_LIST_LENGTH:
                 hit_counts.pop(0)
+    
+    def _extract_file_info(self, file: Path) -> dict[str, Any]:
+        """Extract header information from the file."""
+        result = {
+            'ra': None,
+            'dec': None,
+            'tstart': None,
+            'nchans': None,
+            'foff': None,
+            'fch1': None,
+            'flch': None
+        }
+        
+        try:
+            with h5py.File(file, 'r') as f:
+                data = f['data']
+                attrs = dict(data.attrs)
+                
+                # Extract values, handling various HDF5 attribute types
+                # Map header keys to our result keys
+                key_mapping = {
+                    'src_raj': 'ra',
+                    'src_dej': 'dec',
+                    'tstart': 'tstart',
+                    'nchans': 'nchans',
+                    'foff': 'foff',
+                    'fch1': 'fch1'
+                }
+                
+                for header_key, result_key in key_mapping.items():
+                    try:
+                        value = attrs.get(header_key)
+                        if value is not None:
+                            # Convert to Python native type
+                            if hasattr(value, 'item'):
+                                result[result_key] = value.item()  # type: ignore
+                            else:
+                                result[result_key] = value  # type: ignore
+                    except Exception:
+                        result[result_key] = None
+                
+                # Calculate flch (fch1 + foff * nchans)
+                try:
+                    if all(result[k] is not None for k in ['fch1', 'foff', 'nchans']):
+                        result['flch'] = result['fch1'] + result['foff'] * result['nchans']  # type: ignore
+                except Exception:
+                    result['flch'] = None
+                        
+        except Exception as e:
+            self._logger.error(f'Failed to extract file info from {file}: {e}')
+            
+        return result
+    
+    def _update_files_csv(self, file: Path, df: pd.DataFrame | None, file_info: dict[str, Any] | None):
+        """Update the files.csv with information about the processed file."""
+        # Determine number of hits
+        num_hits = -1  # Default for failed processing
+        if df is not None:
+            if len(df) == 1 and df.iloc[0]['flags'] == 'EMPTY FILE':
+                num_hits = 0
+            else:
+                num_hits = len(df)
+        
+        # Get current UNIX timestamp
+        unix_time_completed = time.time()
+        
+        # Create row data
+        row_data = {
+            'file': str(file),
+            'num_hits': num_hits,
+            'unix_time_completed': unix_time_completed
+        }
+        
+        # Add header information if available
+        if file_info is not None:
+            row_data.update({
+                'RA': file_info['ra'],
+                'DEC': file_info['dec'],
+                'tstart': file_info['tstart'],
+                'nchans': file_info['nchans'],
+                'foff': file_info['foff'],
+                'fch1': file_info['fch1'],
+                'flch': file_info['flch']
+            })
+        else:
+            # Add None values for header columns
+            row_data.update({
+                'RA': None,
+                'DEC': None,
+                'tstart': None,
+                'nchans': None,
+                'foff': None,
+                'fch1': None,
+                'flch': None
+            })
+        
+        # Write to files.csv (thread-safe)
+        with self._progress_lock:
+            files_csv_exists = self.files_csv_path.is_file()
+            row_df = pd.DataFrame([row_data])
+            row_df.to_csv(self.files_csv_path, header=not files_csv_exists, mode='a', index=False)
     
     @contextmanager
     def get_progress_data(self):
