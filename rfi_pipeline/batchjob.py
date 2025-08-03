@@ -11,7 +11,7 @@ import datetime as dt
 
 from contextlib import contextmanager
 import json
-MAX_PROGRESS_LIST_LENGTH = 16
+MAX_PROGRESS_LIST_LENGTH = 64
 
 import os
 import time
