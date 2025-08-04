@@ -131,7 +131,7 @@ class Manager:
 
         with mp.Manager() as mp_manager:
             log_queue = mp_manager.Queue()
-            progress_lock = mp_manager.Lock()
+            meta_lock = mp_manager.Lock()
 
             batch_args = (
                 {
@@ -139,7 +139,7 @@ class Manager:
                     'batch_num': i,
                     'process_params': self.process_params,
                     'outdir': self.outdir,
-                    'progress_lock': progress_lock
+                    'meta_lock': meta_lock
                 }
                 for i, batch in enumerate(self.batches)
             )

@@ -31,7 +31,7 @@ class BatchJob:
             process_params: dict[str, Any],
             outdir: Path, 
             batch: tuple[Path, ...], 
-            progress_lock: Lock,
+            meta_lock: Lock,
             batch_num: int = -1,
     ):
         self._logger = logging.getLogger(f'{__name__} (batch {batch_num:>03})')
@@ -44,7 +44,7 @@ class BatchJob:
         self.save_path = outdir / 'batches' / f'batch_{batch_num:>03}.csv'
         self.files_csv_path = outdir / 'files.csv'
 
-        self._progress_lock = progress_lock
+        self._meta_lock = meta_lock
         self._progress_data_path = outdir / 'progress-data.json'
 
         with self.get_progress_data() as progress_data:
@@ -210,7 +210,7 @@ class BatchJob:
             })
         
         # Write to files.csv (thread-safe)
-        with self._progress_lock:
+        with self._meta_lock:
             files_csv_exists = self.files_csv_path.is_file()
             row_df = pd.DataFrame([row_data])
             row_df.to_csv(self.files_csv_path, header=not files_csv_exists, mode='a', index=False)
@@ -218,7 +218,7 @@ class BatchJob:
     @contextmanager
     def get_progress_data(self):
         # context manager mania
-        with self._progress_lock:
+        with self._meta_lock:
             with self._progress_data_path.open('r') as f:
                 progress_data: list[dict[str, Any]] = json.load(f)
 
