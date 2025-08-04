@@ -39,7 +39,7 @@ def merge_rfi_run(rundir: Path, outdir: Optional[Path] = None,
     """
     from .__main__ import (
         find_batch_files, load_metadata, merge_batch_files, 
-        save_merged_data, setup_logging
+        save_merged_data, setup_logging, copy_files_csv
     )
     
     # Set up basic logging
@@ -56,6 +56,11 @@ def merge_rfi_run(rundir: Path, outdir: Optional[Path] = None,
     # Find and merge batch files
     batch_files = find_batch_files(rundir, logger)
     metadata = load_metadata(rundir, logger)
+    
+    # Copy files.csv if merging to a different directory
+    if outdir != rundir:
+        copy_files_csv(rundir, outdir, force, logger)
+    
     merged_df = merge_batch_files(batch_files, logger)
     
     # Save merged data

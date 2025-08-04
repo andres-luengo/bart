@@ -3,6 +3,7 @@ import json
 import logging
 from pathlib import Path
 from typing import Optional
+import shutil
 
 import pandas as pd
 
@@ -141,6 +142,30 @@ def load_metadata(rundir: Path, logger: logging.Logger) -> Optional[dict]:
         logger.info("No metadata file found")
     
     return None
+
+
+def copy_files_csv(rundir: Path, outdir: Path, force: bool, logger: logging.Logger) -> None:
+    """Copy files.csv meta table to output directory if it exists."""
+    source_files_csv = rundir / 'files.csv'
+    
+    if not source_files_csv.exists():
+        logger.info("No files.csv found in run directory")
+        return
+    
+    dest_files_csv = outdir / 'files.csv'
+    
+    # Check if destination exists and handle overwrite
+    if dest_files_csv.exists() and not force:
+        response = input(f"files.csv already exists in {outdir}. Overwrite? (y/N): ")
+        if response.lower() != 'y':
+            logger.info("Skipping files.csv copy")
+            return
+    
+    try:
+        shutil.copy2(source_files_csv, dest_files_csv)
+        logger.info(f"Copied files.csv from {source_files_csv} to {dest_files_csv}")
+    except Exception as e:
+        logger.warning(f"Failed to copy files.csv: {e}")
 
 
 def merge_batch_files(batch_files: list[Path], logger: logging.Logger) -> pd.DataFrame:
@@ -329,6 +354,10 @@ def main():
         
         # Load metadata
         metadata = load_metadata(args.rundir, logger)
+        
+        # Copy files.csv if merging to a different directory
+        if outdir != args.rundir:
+            copy_files_csv(args.rundir, outdir, args.force, logger)
         
         # Merge batch files
         merged_df = merge_batch_files(batch_files, logger)
