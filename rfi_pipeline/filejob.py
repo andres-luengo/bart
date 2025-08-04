@@ -251,7 +251,7 @@ class FileJob:
 
             self.smooth_dc_spike(block, block_l_index)
 
-            fit_start_time = time.perf_counter()
+            fit_start_time = time.perf_counter()  
             params = self.fit_frequency_thresholds(freq_array, block)
             fit_end_time = time.perf_counter()
             self._logger.debug(f'Done threshold-based estimation, took {fit_end_time - fit_start_time:.3g}s.')
