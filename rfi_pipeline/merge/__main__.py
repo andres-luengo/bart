@@ -209,10 +209,7 @@ def save_merged_data(df: pd.DataFrame, outdir: Path, format_type: str,
                     compress: bool, sort_by: str, force: bool, 
                     metadata: Optional[dict], read_only: bool, logger: logging.Logger) -> None:
     """Save merged DataFrame to output file."""
-    
-    # Create output directory
-    outdir.mkdir(parents=True, exist_ok=True)
-    
+        
     # Sort data if requested
     if sort_by and sort_by in df.columns:
         logger.info(f"Sorting data by '{sort_by}'...")
@@ -347,7 +344,8 @@ def main():
         else:
             outdir = args.rundir  # Output directly to the run directory
         
-        logger.info(f"Output directory: {outdir}")
+        logger.info(f"Output directory: {outdir}")  
+        outdir.mkdir(parents=True, exist_ok=True)
         
         # Find batch files
         batch_files = find_batch_files(args.rundir, logger)
