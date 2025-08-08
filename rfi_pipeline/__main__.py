@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 
-from .manager import Manager
+from .manager import RunManager
 
 import logging, logging.handlers
 import shutil
@@ -219,7 +219,7 @@ def main():
     make_outdir(args)
     logging_setup(args)
     files = get_file_names(args.infile)
-    manager = Manager.from_namespace(args, files)
+    manager = RunManager.from_namespace(args, files)
     manager.run()
 
 if __name__ == '__main__': main()

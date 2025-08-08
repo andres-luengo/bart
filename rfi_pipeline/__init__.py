@@ -9,8 +9,8 @@ __version__ = "0.1.0"
 __author__ = "Breakthrough Listen"
 __description__ = "Radio Frequency Interference Detection Pipeline"
 
-from .manager import Manager
+from .manager import RunManager
 from .batchjob import BatchJob
 from .filejob import FileJob
 
-__all__ = ["Manager", "BatchJob", "FileJob"]
+__all__ = ["RunManager", "BatchJob", "FileJob"]

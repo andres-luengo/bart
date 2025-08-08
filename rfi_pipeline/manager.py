@@ -21,7 +21,7 @@ import datetime as dt
 # does multiprocessing stuff
 # manages file nonsense
 # manages resources
-class Manager:
+class RunManager:
     def __init__(
             self, 
             process_params: dict[str, Any],
