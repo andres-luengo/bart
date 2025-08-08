@@ -1,0 +1,288 @@
+No,Mission,Sat_ver,COSPAR_ID,Launch_date_time_UTC,Launch_site,Orbit_altitude,Orbit_inclination,Satellites_deployed,Satellites_w_DtC,Satellites_working,Outcome,Remarks,Launch_date
+1,v0.9,v0.9,2019-029,"24 May 2019, 02:30","Cape Canaveral,SLC-40",440–550 km (270–340 mi),53.0°,60,,0,Success,"First launch of 60 Starlink test satellites.Said to be ""production design"", these are used to test various aspects of the network, including deorbiting.They do not yet have the planned satellite interlink capabilities and they only communicate with antennas on Earth. A day after launch an amateur astronomer in the Netherlands was one of the first to publish a video showing the satellites flying across the sky as a ""train"" of bright lights.By five weeks post launch, 57 of the 60 satellites had been ""healthy"" while 3 were non-operational andderelict, but deorbited due to atmospheric drag.All working satellites were intentionally deorbited by May 2021, and all remaining failed spacecraft re-entered by October 2022.",2019-05-24
+–,Tr-2,v1.5,2021-059,"30 June 2021, 19:31","Cape Canaveral,SLC-40",560 km (350 mi),97.5°,3,,3,Success,Part ofTransporter-2mission.Second launch of production Starlink and first launch of 3 prototype Starlink v1.5 satellites to polar orbits.,2021-06-30
+–,Tr-1,v1,2021-006,"24 January 2021, 15:00:00","Cape Canaveral,SLC-40",560 km (350 mi),97.5°,10,,0,Success,Part ofTransporter-1mission.First launch of production Starlink satellites to polar orbits.,2021-01-24
+–,Tintin,v0.1,2018-020,"22 February 2018, 14:17","Vandenberg,SLC-4E",514 km (319 mi),97.5°,2,,0,Success,"Two test satellites known as Tintin A and B(MicroSat-2a and 2b) that were deployed as co-payloads to thePazsatellite. As of 1 September 2020[update], the orbits have decayed and both satellites have reentered the atmosphere.",2018-02-22
+29,Launch 28,v1,2021-044,"26 May 2021, 18:59","Cape Canaveral,SLC-40",550 km (340 mi),53.0°,60,,60,Success,Last v1.0 and Group 1 Starlink Launch.,2021-05-26
+27,Launch 27,v1,2021-040,"9 May 2021, 06:42","Cape Canaveral,SLC-40",550 km (340 mi),53.0°,60,,58,Success,,2021-05-09
+28,Launch 26,v1,2021-041,"15 May 2021, 22:56","Kennedy,LC-39A",569–582 km (354–362 mi),53.0°,52,,49,Success,"Rideshare satellites: a radar Earth imaging satellite forCapella Space, and an Earth observation satellite, Tyvak 0130, forTyvak Nano-Satellite Systems.",2021-05-15
+26,Launch 25,v1,2021-038,"4 May 2021, 19:01","Kennedy,LC-39A",550 km (340 mi),53.0°,60,,60,Success,,2021-05-04
+25,Launch 24,v1,2021-036,"29 April 2021, 03:44:00","Cape Canaveral,SLC-40",550 km (340 mi),53.0°,60,,60,Success,,2021-04-29
+24,Launch 23,v1,2021-027,"7 April 2021, 16:34:18","Cape Canaveral,SLC-40",550 km (340 mi),53.0°,60,,60,Success,,2021-04-07
+23,Launch 22,v1,2021-024,"24 March 2021, 08:28:24","Cape Canaveral,SLC-40",550 km (340 mi),53.0°,60,,43,Success,,2021-03-24
+22,Launch 21,v1,2021-021,"14 March 2021, 10:01:26","Kennedy,LC-39A",550 km (340 mi),53.0°,60,,54,Success,,2021-03-14
+21,Launch 20,v1,2021-018,"11 March 2021, 08:13:29","Cape Canaveral,SLC-40",550 km (340 mi),53.0°,60,,59,Success,,2021-03-11
+19,Launch 19,v1,2021-012,"16 February 2021, 03:59:37","Cape Canaveral,SLC-40",550 km (340 mi),53.0°,60,,57,Success,,2021-02-16
+18,Launch 18,v1,2021-009,"4 February 2021, 06:19:00","Cape Canaveral,SLC-40",550 km (340 mi),53.0°,60,,56,Success,,2021-02-04
+20,Launch 17,v1,2021-017,"4 March 2021, 08:24:54","Kennedy,LC-39A",550 km (340 mi),53.0°,60,,54,Success,"Second stage failed to deorbit actively, reentered March 26 over Oregon and Washington in the United States.",2021-03-04
+17,Launch 16,v1,2021-005,"20 January 2021, 13:02:00","Kennedy,LC-39A",550 km (340 mi),53.0°,60,,57,Success,,2021-01-20
+16,Launch 15,v1,2020-088,"25 November 2020, 02:13:12","Cape Canaveral,SLC-40",550 km (340 mi),53.0°,60,,40,Success,,2020-11-25
+15,Launch 14,v1,2020-074,"24 October 2020, 15:31:34","Cape Canaveral,SLC-40",550 km (340 mi),53.0°,60,,43,Success,,2020-10-24
+14,Launch 13,v1,2020-073,"18 October 2020, 12:25:57","Kennedy,LC-39A",550 km (340 mi),53.0°,60,,45,Success,,2020-10-18
+13,Launch 12,v1,2020-070,"6 October 2020, 11:29:34","Kennedy,LC-39A",550 km (340 mi),53.0°,60,,50,Success,,2020-10-06
+12,Launch 11,v1,2020-062,"3 September 2020, 12:46:14","Kennedy,LC-39A",550 km (340 mi),53.0°,60,,50,Success,,2020-09-03
+11,Launch 10,v1,2020-057,"18 August 2020, 14:31:16","Cape Canaveral,SLC-40",550 km (340 mi),53.0°,58,,53,Success,"Rideshare satellites fromPlanet Labs,SkySats 19-21Earth-observation satellites.",2020-08-18
+10,Launch 9,v1,2020-055,"7 August 2020, 05:12:05","Kennedy,LC-39A",550 km (340 mi),53.0°,57,,54,Success,"BlackSky Global 7 and 8, the 5th and 6th BlackSky Global satellites, launched as rideshare payloads.All of the Starlink satellites are outfitted with the sunshade visor that was tested on a single satellite on 4 June 2020 launch.",2020-08-07
+9,Launch 8,v1,2020-038,"13 June 2020, 09:21:18","Cape Canaveral,SLC-40",550 km (340 mi),53.0°,58,,50,Success,"First Starlink rideshare launch, carrying only 58 of SpaceX's satellites plus threePlanet Labs,SkySats 16-18Earth-observation satellites.",2020-06-13
+8,Launch 7,v1,2020-035,"4 June 2020, 01:25:00","Cape Canaveral,SLC-40",550 km (340 mi),53.0°,60,,53,Success,"One of the satellites, dubbedVisorSat, has a sunshade to reduce the impact on ground-based astronomical observations.",2020-06-04
+7,Launch 6,v1,2020-025,"22 April 2020, 19:30:30","Kennedy,LC-39A",550 km (340 mi),53.0°,60,,49,Success,,2020-04-22
+6,Launch 5,v1,2020-019,"18 March 2020, 12:16:39","Kennedy,LC-39A",550 km (340 mi),53.0°,60,,54,Success,,2020-03-18
+5,Launch 4,v1,2020-012,"17 February 2020, 15:05","Cape Canaveral,SLC-40",550 km (340 mi),53.0°,60,,46,Success,First time the satellites were released in an elliptical orbit (212 × 386 km).,2020-02-17
+4,Launch 3,v1,2020-006,"29 January 2020, 14:06","Cape Canaveral,SLC-40",550 km (340 mi),53.0°,60,,48,Success,,2020-01-29
+3,Launch 2,v1,2020-001,"7 January 2020, 02:19:21","Cape Canaveral,SLC-40",550 km (340 mi),53.0°,60,,40,Success,"One of the satellites, dubbedDarkSat,has an experimental coating to make it less reflective, and to reduce the impact on ground-based astronomical observations.",2020-01-07
+2,Launch 1,v1,2019-074,"11 November 2019, 14:56","Cape Canaveral,SLC-40",550 km (340 mi),53.0°,60,,43,Success,"First launch of Starlink ""operational"" satellites (v1.0),with an increased mass of 260 kg each and included Ka-band antennas.Satellites were released in a circular orbit at around 290 km altitude, from which the satellites raised their altitude by themselves.",2019-11-11
+213,Group N-01,v2 mini,2024-225,"30 November 2024, 08:10","Vandenberg,SLC-4E",570 km (350 mi),70.0°,20,,20,Success,The 20 Starlink satellites were launched together with two Starshields from NROL-126 mission,2024-11-30
+284,Group 17-3,v2 mini,2025-152,"19 July 2025, 03:52","Vandenberg,SLC-4E",535 km (332 mi),97.61°,24,,24,Success,,2025-07-19
+266,Group 17-1,v2 mini,2025-112,"27 May 2025, 16:57","Vandenberg,SLC-4E",535 km (332 mi),97.61°,24,,24,Success,,2025-05-27
+275,Group 15-9,v2 mini,2025-129,"17 June 2025, 01:36","Vandenberg,SLC-4E",535 km (332 mi),70.0°,26,,26,Success,,2025-06-17
+271,Group 15-8,v2 mini,2025-123,"8 June 2025, 14:20","Vandenberg,SLC-4E",535 km (332 mi),70.0°,26,,26,Success,,2025-06-08
+280,Group 15-7,v2 mini,2025-142,"28 June 2025, 17:13","Vandenberg,SLC-4E",535 km (332 mi),70.0°,26,,26,Success,,2025-06-28
+273,Group 15-6,v2 mini,2025-126,"13 June 2025, 01:54","Vandenberg,SLC-4E",535 km (332 mi),70.0°,26,,26,Success,,2025-06-13
+262,Group 15-5,v2 mini,2025-102,"16 May 2025, 13:43","Vandenberg,SLC-4E",535 km (332 mi),70.0°,26,,26,Success,,2025-05-16
+259,Group 15-4,v2 mini,2025-098,"13 May 2025, 01:15","Vandenberg,SLC-4E",535 km (332 mi),70.0°,26,,26,Success,,2025-05-13
+257,Group 15-3,v2 mini,2025-094,"10 May 2025, 00:19","Vandenberg,SLC-4E",535 km (332 mi),70.0°,26,,26,Success,,2025-05-10
+283,Group 15-2,v2 mini,2025-150,"16 July 2025, 02:05","Vandenberg,SLC-4E",535 km (332 mi),70.0°,26,,26,Success,,2025-07-16
+237,Group 15-1,v2 mini,2025-037,"23 February 2025, 01:38","Vandenberg,SLC-4E",535 km (332 mi),70.0°,22,,22,Success,,2025-02-23
+225,Group 13-1,v2 mini,2025-014,"21 January 2025, 05:24","Kennedy,LC-39A",559 km (347 mi),43.0°,21,,21,Success,Rideshare satellites: Two Starshield satellites.,2025-01-21
+274,Group 12-26,v2 mini,2025-127,"13 June 2025, 15:29","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,13.0,23,Success,,2025-06-13
+242,Group 12-25,v2 mini,2025-057,"18 March 2025, 19:57","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,13.0,23,Success,,2025-03-18
+272,Group 12-24,v2 mini,2025-124,"10 June 2025, 13:05","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,13.0,23,Success,,2025-06-10
+251,Group 12-23,v2 mini,2025-085,"28 April 2025, 02:09","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,13.0,23,Success,,2025-04-28
+265,Group 12-22,v2 mini,2025-111,"24 May 2025, 17:19","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,13.0,23,Success,,2025-05-24
+240,Group 12-21,v2 mini,2025-048,"13 March 2025, 02:35","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,21,13.0,21,Success,,2025-03-13
+239,Group 12-20,v2 mini,2025-043,"3 March 2025, 02:24","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,21,13.0,21,Success,,2025-03-03
+269,Group 12-19,v2 mini,2025-119,"3 June 2025, 04:43","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,13.0,23,Success,,2025-06-03
+233,Group 12-18,v2 mini,2025-031,"11 February 2025, 18:53","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,21,13.0,21,Success,,2025-02-11
+248,Group 12-17,v2 mini,2025-075,"13 April 2025, 00:53","Kennedy,LC-39A",559 km (347 mi),43.0°,21,13.0,21,Success,,2025-04-13
+241,Group 12-16,v2 mini,2025-053,"15 March 2025, 11:35","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,13.0,23,Success,,2025-03-15
+263,Group 12-15,v2 mini,2025-107,"21 May 2025, 03:19","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,13.0,23,Success,,2025-05-21
+236,Group 12-14,v2 mini,2025-035,"21 February 2025, 15:19","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,13.0,23,Success,,2025-02-21
+238,Group 12-13,v2 mini,2025-039,"27 February 2025, 03:34","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,21,13.0,21,Success,,2025-02-27
+223,Group 12-12,v2 mini,2025-006,"10 January 2025, 19:11","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,21,13.0,21,Success,,2025-01-10
+222,Group 12-11,v2 mini,2025-004,"8 January 2025, 15:27","Kennedy,LC-39A",559 km (347 mi),43.0°,21,13.0,21,Success,,2025-01-08
+253,Group 12-10,v2 mini,2025-089,"29 April 2025, 02:34","Kennedy,LC-39A",559 km (347 mi),43.0°,23,13.0,23,Success,,2025-04-29
+231,Group 12-9,v2 mini,2025-027,"8 February 2025, 19:18","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,21,13.0,21,Success,,2025-02-08
+234,Group 12-8,v2 mini,2025-032,"15 February 2025, 06:14","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,21,13.0,21,Success,,2025-02-15
+228,Group 12-7,v2 mini,2025-019,"27 January 2025, 22:05","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,21,13.0,21,Success,,2025-01-27
+220,Group 12-6,v2 mini,2024-254,"31 December 2024, 05:39","Kennedy,LC-39A",559 km (347 mi),43.0°,21,13.0,21,Success,,2024-12-31
+216,Group 12-5,v2 mini,2024-237,"8 December 2024, 05:12","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,13.0,23,Success,,2024-12-08
+224,Group 12-4,v2 mini,2025-008,"13 January 2025, 16:47","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,21,13.0,21,Success,,2025-01-13
+230,Group 12-3,v2 mini,2025-024,"4 February 2025, 10:15","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,21,13.0,21,Success,,2025-02-04
+218,Group 12-2,v2 mini,2024-249,"23 December 2024, 05:35","Kennedy,LC-39A",559 km (347 mi),43.0°,21,13.0,21,Success,,2024-12-23
+210,Group 12-1,v2 mini,2024-220,"25 November 2024, 10:02","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,12.0,23,Success,,2024-11-25
+270,Group 11-22,v2 mini,2025-120,"4 June 2025, 23:40","Vandenberg,SLC-4E",535 km (332 mi),53.00°,27,,27,Success,,2025-06-04
+268,Group 11-18,v2 mini,2025-117,"31 May 2025, 20:10","Vandenberg,SLC-4E",535 km (332 mi),53.00°,27,,27,Success,,2025-05-31
+264,Group 11-16,v2 mini,2025-110,"23 May 2025, 22:32","Vandenberg,SLC-4E",535 km (332 mi),53.00°,27,,27,Success,,2025-05-23
+245,Group 11-13,v2 mini,2025-069,"4 April 2025, 01:02","Vandenberg,SLC-4E",535 km (332 mi),53.00°,27,,27,Success,,2025-04-04
+247,Group 11-11,v2 mini,2025-071,"7 April 2025, 23:06","Vandenberg,SLC-4E",535 km (332 mi),53.00°,27,,27,Success,,2025-04-07
+232,Group 11-10,v2 mini,2025-029,"11 February 2025, 02:09","Vandenberg,SLC-4E",535 km (332 mi),53.00°,23,,23,Success,,2025-02-11
+252,Group 11-9,v2 mini,2025-087,"28 April 2025, 20:42","Vandenberg,SLC-4E",535 km (332 mi),53.00°,27,,27,Success,,2025-04-28
+226,Group 11-8,v2 mini,2025-015,"21 January 2025, 15:45","Vandenberg,SLC-4E",535 km (332 mi),53.00°,27,,27,Success,,2025-01-21
+243,Group 11-7,v2 mini,2025-063,"26 March 2025, 22:11","Vandenberg,SLC-4E",535 km (332 mi),53.00°,27,,27,Success,,2025-03-26
+227,Group 11-6,v2 mini,2025-018,"24 January 2025, 14:07","Vandenberg,SLC-4E",535 km (332 mi),53.00°,23,,23,Success,,2025-01-24
+229,Group 11-4,v2 mini,2025-022,"2 February 2025, 23:02","Vandenberg,SLC-4E",535 km (332 mi),53.00°,22,,22,Success,,2025-02-02
+219,Group 11-3,v2 mini,2024-251,"29 December 2024, 01:58","Vandenberg,SLC-4E",535 km (332 mi),53.00°,22,,22,Success,,2024-12-29
+217,Group 11-2,v2 mini,2024-239,"13 December 2024, 21:55","Vandenberg,SLC-4E",535 km (332 mi),53.00°,22,13.0,22,Success,,2024-12-13
+184,Group 11-1,v2 mini,2024-138,"4 August 2024, 07:24","Vandenberg,SLC-4E",535 km (332 mi),53.00°,23,,23,Success,,2024-08-04
+279,Group 10-34,v2 mini,2025-139,"28 June 2025, 04:26","Cape Canaveral,SLC-40",279 km (173 mi),53.16°,27,,27,Success,,2025-06-28
+267,Group 10-32,v2 mini,2025-113,"28 May 2025, 13:30","Kennedy,LC-39A",279 km (173 mi),53.16°,27,,27,Success,,2025-05-28
+282,Group 10-28,v2 mini,2025-147,"8 July 2025, 08:21","Cape Canaveral,SLC-40",279 km (173 mi),53.16°,28,,28,Success,,2025-07-08
+281,Group 10-25,v2 mini,2025-144,"2 July 2025, 06:28","Cape Canaveral,SLC-40",279 km (173 mi),53.16°,27,,27,Success,,2025-07-02
+277,Group 10-23,v2 mini,2025-133,"23 June 2025, 05:58","Cape Canaveral,SLC-40",279 km (173 mi),53.16°,27,,27,Success,,2025-06-23
+276,Group 10-18,v2 mini,2025-130,"18 June 2025, 05:55","Cape Canaveral,SLC-40",279 km (173 mi),53.16°,28,,28,Success,,2025-06-18
+278,Group 10-16,v2 mini,2025-137,"25 June 2025, 19:54","Cape Canaveral,SLC-40",279 km (173 mi),53.16°,27,,27,Success,,2025-06-25
+201,Group 10-13,v2 mini,2024-196,"30 October 2024, 21:10","Cape Canaveral,SLC-40",279 km (173 mi),53.16°,23,,23,Success,,2024-10-30
+235,Group 10-12,v2 mini,2025-034,"18 February 2025, 23:21","Cape Canaveral,SLC-40",279 km (173 mi),53.16°,23,,23,Success,,2025-02-18
+195,Group 10-10,v2 mini,2024-183,"15 October 2024, 06:10","Cape Canaveral,SLC-40",279 km (173 mi),53.16°,23,,23,Success,,2024-10-15
+180,Group 10-9,v2 mini,2024-131,"27 July 2024, 05:45","Kennedy,LC-39A",279 km (173 mi),53.16°,23,,23,Success,,2024-07-27
+199,Group 10-8,v2 mini,2024-193,"26 October 2024, 21:47","Cape Canaveral,SLC-40",279 km (173 mi),53.16°,22,,22,Success,,2024-10-26
+186,Group 10-7,v2 mini,2024-144,"12 August 2024, 10:37","Kennedy,LC-39A",279 km (173 mi),53.16°,23,,23,Success,,2024-08-12
+183,Group 10-6,v2 mini,2024-136,"2 August 2024, 05:01","Kennedy,LC-39A",279 km (173 mi),53.16°,23,,23,Success,,2024-08-02
+187,Group 10-5,v2 mini,2024-150,"20 August 2024, 13:20","Cape Canaveral,SLC-40",279 km (173 mi),53.16°,22,,22,Success,,2024-08-20
+181,Group 10-4,v2 mini,2024-132,"28 July 2024, 04:17","Cape Canaveral,SLC-40",279 km (173 mi),53.16°,23,,23,Success,,2024-07-28
+177,Group 10-3,v2 mini,2024-120,"27 June 2024, 11:14","Cape Canaveral,SLC-40",279 km (173 mi),53.16°,23,,23,Success,,2024-06-27
+175,Group 10-2,v2 mini,2024-117,"23 June 2024, 17:15","Cape Canaveral,SLC-40",279 km (173 mi),53.16°,22,,22,Success,,2024-06-23
+172,Group 10-1,v2 mini,2024-111,"8 June 2024, 01:56","Cape Canaveral,SLC-40",279 km (173 mi),53.16°,22,,22,Success,,2024-06-08
+193,Group 9-17,v2 mini,2024-171,"20 September 2024, 13:50","Vandenberg,SLC-4E",535 km (332 mi),53.00°,20,13.0,20,Success,,2024-09-20
+215,Group 9-14,v2 mini,2024-231,"5 December 2024, 03:05","Vandenberg,SLC-4E",535 km (332 mi),53.00°,20,13.0,20,Success,,2024-12-05
+209,Group 9-13,v2 mini,2024-217,"24 November 2024, 05:25","Vandenberg,SLC-4E",535 km (332 mi),53.00°,20,13.0,20,Success,,2024-11-24
+207,Group 9-12,v2 mini,2024-213,"18 November 2024, 05:53","Vandenberg,SLC-4E",535 km (332 mi),53.00°,20,13.0,20,Success,,2024-11-18
+205,Group 9-11,v2 mini,2024-209,"14 November 2024, 05:23","Vandenberg,SLC-4E",535 km (332 mi),53.00°,20,13.0,20,Success,,2024-11-14
+203,Group 9-10,v2 mini,2024-204,"9 November 2024, 06:14","Vandenberg,SLC-4E",535 km (332 mi),53.00°,20,13.0,20,Success,,2024-11-09
+200,Group 9-9,v2 mini,2024-195,"30 October 2024, 12:07","Vandenberg,SLC-4E",535 km (332 mi),53.00°,20,13.0,20,Success,200th launch of dedicated starlink missions.,2024-10-30
+194,Group 9-8,v2 mini,2024-175,"25 September 2024, 04:01","Vandenberg,SLC-4E",535 km (332 mi),53.00°,20,13.0,20,Success,,2024-09-25
+196,Group 9-7,v2 mini,2024-184,"15 October 2024, 08:21","Vandenberg,SLC-4E",535 km (332 mi),53.00°,20,13.0,20,Success,,2024-10-15
+192,Group 9-6,v2 mini,2024-164,"13 September 2024, 01:45","Vandenberg,SLC-4E",535 km (332 mi),53.00°,21,13.0,21,Success,,2024-09-13
+190,Group 9-5,v2 mini,2024-155,"31 August 2024, 08:48","Vandenberg,SLC-4E",535 km (332 mi),53.00°,21,13.0,21,Success,,2024-08-31
+182,Group 9-4,v2 mini,2024-133,"28 July 2024, 07:24","Vandenberg,SLC-4E",535 km (332 mi),53.00°,21,13.0,21,Success,,2024-07-28
+179,Group 9-3,v2 mini,2024-129,"12 July 2024, 02:39","Vandenberg,SLC-4E",535 km (332 mi),53.00°,20,13.0,0,Failure,"Experienced launch failure. During launch a liquid oxygen leak developed, causing the upper stage to fail during the second burn.The satellites were left in a very low, unusable orbit.",2024-07-12
+176,Group 9-2,v2 mini,2024-118,"24 June 2024, 03:47","Vandenberg,SLC-4E",535 km (332 mi),53.00°,20,13.0,20,Success,,2024-06-24
+174,Group 9-1,v2 mini,2024-113,"19 June 2024, 03:40","Vandenberg,SLC-4E",535 km (332 mi),53.00°,20,13.0,20,Success,,2024-06-19
+197,Group 8-19,v2 mini,2024-187,"18 October 2024, 23:31","Cape Canaveral,SLC-40",535 km (332 mi),53.00°,20,13.0,20,Success,,2024-10-18
+191,Group 8-11,v2 mini,2024-158,"5 September 2024, 15:33","Cape Canaveral,SLC-40",535 km (332 mi),53.00°,21,13.0,21,Success,,2024-09-05
+189,Group 8-10,v2 mini,2024-154,"31 August 2024, 07:43","Cape Canaveral,SLC-40",535 km (332 mi),53.00°,21,13.0,21,Success,,2024-08-31
+178,Group 8-9,v2 mini,2024-124,"3 July 2024, 08:55","Cape Canaveral,SLC-40",535 km (332 mi),53.00°,20,13.0,20,Success,,2024-07-03
+173,Group 8-8,v2 mini,2024-112,"8 June 2024, 12:58","Vandenberg,SLC-4E",535 km (332 mi),53.00°,20,13.0,20,Success,,2024-06-08
+165,Group 8-7,v2 mini,2024-091,"14 May 2024, 18:39","Vandenberg,SLC-4E",535 km (332 mi),53.00°,20,13.0,20,Success,,2024-05-14
+188,Group 8-6,v2 mini,2024-152,"28 August 2024, 06:54","Cape Canaveral,SLC-40",535 km (332 mi),53.00°,21,13.0,21,Success,,2024-08-28
+171,Group 8-5,v2 mini,2024-107,"5 June 2024, 02:16","Cape Canaveral,SLC-40",535 km (332 mi),53.00°,20,13.0,20,Success,,2024-06-05
+185,Group 8-3,v2 mini,2024-141,"10 August 2024, 12:50","Cape Canaveral,SLC-40",535 km (332 mi),53.00°,21,13.0,21,Success,,2024-08-10
+163,Group 8-2,v2 mini,2024-088,"10 May 2024, 04:30","Vandenberg,SLC-4E",535 km (332 mi),53.00°,20,13.0,20,Success,,2024-05-10
+153,Group 8-1,v2 mini,2024-065,"7 April 2024, 02:25","Vandenberg,SLC-4E",535 km (332 mi),53.00°,21,6.0,21,Success,,2024-04-07
+151,Group 7-18,v2 mini,2024-062,"2 April 2024, 02:30","Vandenberg,SLC-4E",525 km (326 mi),53.05°,22,,22,Success,,2024-04-02
+145,Group 7-17,v2 mini,2024-046,"11 March 2024, 04:09","Vandenberg,SLC-4E",525 km (326 mi),53.05°,23,,23,Success,,2024-03-11
+147,Group 7-16,v2 mini,2024-050,"19 March 2024, 02:28","Vandenberg,SLC-4E",525 km (326 mi),53.05°,20,,20,Success,Rideshare satellites: Two Starshield satellites.,2024-03-19
+140,Group 7-15,v2 mini,2024-036,"23 February 2024, 04:11","Vandenberg,SLC-4E",525 km (326 mi),53.05°,22,,22,Success,,2024-02-23
+139,Group 7-14,v2 mini,2024-031,"15 February 2024, 21:34","Vandenberg,SLC-4E",525 km (326 mi),53.05°,22,,22,Success,,2024-02-15
+138,Group 7-13,v2 mini,2024-027,"10 February 2024, 00:34","Vandenberg,SLC-4E",525 km (326 mi),53.05°,22,,21,Success,,2024-02-10
+137,Group 7-12,v2 mini,2024-020,"29 January 2024, 05:02","Vandenberg,SLC-4E",525 km (326 mi),53.05°,22,,22,Success,,2024-01-29
+135,Group 7-11,v2 mini,2024-017,"24 January 2024, 00:35","Vandenberg,SLC-4E",525 km (326 mi),53.05°,22,,22,Success,,2024-01-24
+133,Group 7-10,v2 mini,2024-011,"14 January 2024, 08:59","Vandenberg,SLC-4E",525 km (326 mi),53.05°,22,,22,Success,,2024-01-14
+131,Group 7-9,v2 mini,2024-002,"3 January 2024, 03:44","Vandenberg,SLC-4E",525 km (326 mi),53.05°,21,6.0,21,Success,"First with Direct to Cell capability, allowing satellites to act as a cellphone tower in space, allowing network integration similar to a standard roaming partner",2024-01-03
+127,Group 7-8,v2 mini,2023-192,"8 December 2023, 08:03","Vandenberg,SLC-4E",525 km (326 mi),53.05°,22,,22,Success,,2023-12-08
+122,Group 7-7,v2 mini,2023-178,"20 November 2023, 10:30","Vandenberg,SLC-4E",525 km (326 mi),53.05°,22,,22,Success,,2023-11-20
+117,Group 7-6,v2 mini,2023-166,"29 October 2023, 09:00","Vandenberg,SLC-4E",525 km (326 mi),53.05°,22,,22,Success,,2023-10-29
+115,Group 7-5,v2 mini,2023-161,"21 October 2023, 08:23","Vandenberg,SLC-4E",525 km (326 mi),53.05°,21,,21,Success,,2023-10-21
+112,Group 7-4,v2 mini,2023-156,"9 October 2023, 07:23","Vandenberg,SLC-4E",525 km (326 mi),53.05°,21,,21,Success,,2023-10-09
+109,Group 7-3,v2 mini,2023-148,"25 September 2023, 08:48","Vandenberg,SLC-4E",525 km (326 mi),53.05°,21,,21,Success,,2023-09-25
+105,Group 7-2,v2 mini,2023-141,"12 September 2023, 06:57","Vandenberg,SLC-4E",525 km (326 mi),53.05°,21,,21,Success,,2023-09-12
+100,Group 7-1,v2 mini,2023-124,"22 August 2023, 09:37","Vandenberg,SLC-4E",525 km (326 mi),53.05°,21,,21,Success,,2023-08-22
+256,Group 6-93,v2 mini,2025-093,"7 May 2025, 01:17","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,28,,28,Success,,2025-05-07
+258,Group 6-91,v2 mini,2025-095,"10 May 2025, 06:28","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,28,,28,Success,,2025-05-10
+255,Group 6-84,v2 mini,2025-092,"4 May 2025, 08:54","Kennedy,LC-39A",559 km (347 mi),43.0°,29,,29,Success,,2025-05-04
+260,Group 6-83,v2 mini,2025-099,"13 May 2025, 05:02","Kennedy,LC-39A",559 km (347 mi),43.0°,28,,28,Success,,2025-05-13
+244,Group 6-80,v2 mini,2025-065,"31 March 2025, 19:52","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,28,,28,Success,,2025-03-31
+202,Group 6-77,v2 mini,2024-202,"7 November 2024, 20:19","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-11-07
+211,Group 6-76,v2 mini,2024-222,"27 November 2024, 04:41","Kennedy,LC-39A",559 km (347 mi),43.0°,24,,24,Success,,2024-11-27
+254,Group 6-75,v2 mini,2025-091,"2 May 2025, 01:51","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,28,,28,Success,,2025-05-02
+250,Group 6-74,v2 mini,2025-083,"25 April 2025, 01:52","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,28,,28,Success,,2025-04-25
+249,Group 6-73,v2 mini,2025-076,"14 April 2025, 04:00","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,27,,27,Success,,2025-04-14
+246,Group 6-72,v2 mini,2025-070,"6 April 2025, 03:07","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,28,,28,Success,,2025-04-06
+221,Group 6-71,v2 mini,2025-003,"6 January 2025, 20:43","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,24,,24,Success,,2025-01-06
+214,Group 6-70,v2 mini,2024-229,"4 December 2024, 10:13","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,24,,24,Success,,2024-12-04
+204,Group 6-69,v2 mini,2024-207,"11 November 2024, 21:28","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,24,,24,Success,,2024-11-11
+206,Group 6-68,v2 mini,2024-210,"14 November 2024, 13:21","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,24,,24,Success,,2024-11-14
+261,Group 6-67,v2 mini,2025-101,"14 May 2025, 16:38","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,28,,28,Success,,2025-05-14
+208,Group 6-66,v2 mini,2024-216,"21 November 2024, 16:07","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,24,,24,Success,,2024-11-21
+212,Group 6-65,v2 mini,2024-224,"30 November 2024, 05:00","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,24,,24,Success,,2024-11-30
+170,Group 6-64,v2 mini,2024-106,"1 June 2024, 02:37","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-06-01
+168,Group 6-63,v2 mini,2024-098,"24 May 2024, 02:45","Kennedy,LC-39A",559 km (347 mi),43.0°,23,,23,Success,,2024-05-24
+167,Group 6-62,v2 mini,2024-097,"23 May 2024, 02:33","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-05-23
+198,Group 6-61,v2 mini,2024-191,"23 October 2024, 21:47","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-10-23
+169,Group 6-60,v2 mini,2024-100,"28 May 2024, 14:24","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-05-28
+166,Group 6-59,v2 mini,2024-093,"18 May 2024, 00:32","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-05-18
+164,Group 6-58,v2 mini,2024-090,"13 May 2024, 00:53","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-05-13
+161,Group 6-57,v2 mini,2024-084,"6 May 2024, 18:14","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-05-06
+162,Group 6-56,v2 mini,2024-086,"8 May 2024, 18:42","Kennedy,LC-39A",559 km (347 mi),43.0°,23,,23,Success,,2024-05-08
+160,Group 6-55,v2 mini,2024-082,"3 May 2024, 01:49","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-05-03
+159,Group 6-54,v2 mini,2024-080,"28 April 2024, 21:50","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-04-28
+158,Group 6-53,v2 mini,2024-076,"23 April 2024, 22:17","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-04-23
+157,Group 6-52,v2 mini,2024-074,"18 April 2024, 22:40","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-04-18
+156,Group 6-51,v2 mini,2024-073,"17 April 2024, 21:24","Kennedy,LC-39A",559 km (347 mi),43.0°,23,,23,Success,,2024-04-17
+155,Group 6-49,v2 mini,2024-071,"13 April 2024, 01:40","Kennedy,LC-39A",559 km (347 mi),43.0°,23,,23,Success,,2024-04-13
+154,Group 6-48,v2 mini,2024-068,"10 April 2024, 04:40","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-04-10
+152,Group 6-47,v2 mini,2024-064,"5 April 2024, 09:12","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-04-05
+149,Group 6-46,v2 mini,2024-057,"25 March 2024, 23:42","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-03-25
+150,Group 6-45,v2 mini,2024-060,"31 March 2024, 01:30","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-03-31
+146,Group 6-44,v2 mini,2024-049,"16 March 2024, 00:21","Kennedy,LC-39A",559 km (347 mi),43.0°,23,,23,Success,,2024-03-16
+144,Group 6-43,v2 mini,2024-045,"11 March 2024, 00:03","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-03-11
+148,Group 6-42,v2 mini,2024-056,"24 March 2024, 03:09","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-03-24
+143,Group 6-41,v2 mini,2024-044,"4 March 2024, 23:54","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-03-04
+142,Group 6-40,v2 mini,2024-041,"29 February 2024, 15:30","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,22,Success,,2024-02-29
+141,Group 6-39,v2 mini,2024-038,"25 February 2024, 22:06","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,24,,24,Success,,2024-02-25
+136,Group 6-38,v2 mini,2024-019,"29 January 2024, 01:10","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-01-29
+134,Group 6-37,v2 mini,2024-012,"15 January 2024, 01:52","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-01-15
+130,Group 6-36,v2 mini,2023-211,"29 December 2023, 04:00","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,22,Success,,2023-12-29
+132,Group 6-35,v2 mini,2024-005,"7 January 2024, 22:35","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2024-01-07
+128,Group 6-34,v2 mini,2023-200,"19 December 2023, 04:00","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2023-12-19
+126,Group 6-33,v2 mini,2023-191,"7 December 2023, 05:07","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2023-12-07
+129,Group 6-32,v2 mini,2023-203,"23 December 2023, 04:00","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,22,Success,,2023-12-23
+125,Group 6-31,v2 mini,2023-186,"3 December 2023, 04:00","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2023-12-03
+124,Group 6-30,v2 mini,2023-183,"28 November 2023, 04:20","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2023-11-28
+123,Group 6-29,v2 mini,2023-180,"22 November 2023, 07:47","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2023-11-22
+121,Group 6-28,v2 mini,2023-177,"18 November 2023, 05:05","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2023-11-18
+120,Group 6-27,v2 mini,2023-171,"8 November 2023, 05:05","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2023-11-08
+119,Group 6-26,v2 mini,2023-170,"4 November 2023, 00:37","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2023-11-04
+118,Group 6-25,v2 mini,2023-167,"30 October 2023, 23:20","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2023-10-30
+116,Group 6-24,v2 mini,2023-162,"22 October 2023, 02:17","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,23,,23,Success,,2023-10-22
+114,Group 6-23,v2 mini,2023-160,"18 October 2023, 00:39","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,22,,22,Success,,2023-10-18
+113,Group 6-22,v2 mini,2023-158,"13 October 2023, 23:01","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,22,,22,Success,,2023-10-13
+111,Group 6-21,v2 mini,2023-153,"5 October 2023, 05:36","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,22,,22,Success,,2023-10-05
+97,Group 6-20,v2 mini,2023-115,"8 August 2023, 03:57","Vandenberg,SLC-4E",559 km (347 mi),43.0°,15,,15,Success,,2023-08-08
+110,Group 6-19,v2 mini,2023-151,"30 September 2023, 02:00","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,22,,22,Success,,2023-09-30
+108,Group 6-18,v2 mini,2023-147,"24 September 2023, 03:38","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,22,,21,Success,,2023-09-24
+107,Group 6-17,v2 mini,2023-146,"20 September 2023, 03:38","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,22,,22,Success,,2023-09-20
+106,Group 6-16,v2 mini,2023-144,"16 September 2023, 03:38","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,22,,22,Success,,2023-09-16
+93,Group 6-15,v2 mini,2023-102,"19 July 2023, 04:09","Vandenberg,SLC-4E",559 km (347 mi),43.0°,15,,15,Success,,2023-07-19
+104,Group 6-14,v2 mini,2023-138,"9 September 2023, 03:12","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,22,,22,Success,,2023-09-09
+102,Group 6-13,v2 mini,2023-131,"1 September 2023, 02:21","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,22,,22,Success,,2023-09-01
+103,Group 6-12,v2 mini,2023-134,"4 September 2023, 02:47","Kennedy,LC-39A",559 km (347 mi),43.0°,21,,21,Success,,2023-09-04
+101,Group 6-11,v2 mini,2023-129,"27 August 2023, 01:05","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,22,,21,Success,,2023-08-27
+99,Group 6-10,v2 mini,2023-122,"17 August 2023, 03:36","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,22,,22,Success,,2023-08-17
+98,Group 6-9,v2 mini,2023-119,"11 August 2023, 05:17","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,22,,21,Success,,2023-08-11
+96,Group 6-8,v2 mini,2023-113,"7 August 2023, 02:41","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,22,,22,Success,,2023-08-07
+95,Group 6-7,v2 mini,2023-107,"28 July 2023, 04:01","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,22,,20,Success,,2023-07-28
+94,Group 6-6,v2 mini,2023-105,"24 July 2023, 00:50","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,22,,22,Success,,2023-07-24
+91,Group 6-5,v2 mini,2023-096,"10 July 2023, 03:58","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,22,,22,Success,,2023-07-10
+86,Group 6-4,v2 mini,2023-079,"4 June 2023, 12:20","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,22,,19,Success,,2023-06-04
+84,Group 6-3,v2 mini,2023-067,"19 May 2023, 06:19","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,22,,21,Success,,2023-05-19
+79,Group 6-2,v2 mini,2023-056,"19 April 2023, 14:31","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,21,,20,Success,,2023-04-19
+74,Group 6-1,v2 mini,2023-026,"27 February 2023, 23:13","Cape Canaveral,SLC-40",559 km (347 mi),43.0°,21,,12,Success,"First launch of larger, upgraded Starlink V2 Mini satellites with four times the bandwidth of previous models. First use of anArgon-fueledHall-effect thrusterin space, with higher thrust andspecific impulseand much lower propellant cost than SpaceX's previousKrypton-fueled thrusters.With the unknown of when Starship will be able to launch the second generation satellites, SpaceX modified the original V2 blueprint into a smaller, more compact one named “V2 Mini.” This adjustment, allowed Falcon 9 to transport these satellites, though not as many, into orbit.The first launch of the second satellites occurred on Monday, February 27, 2023 at Cape Canaveral Space Force Station in Florida on SLC-40. Falcon 9 successfully carried 21 of these satellites into orbit later that evening. SpaceX committed to reduce debris by keeping the Starlink tension rods, which hold the V2 mini satellites together, attached to the Falcon 9 second stage. These tension rods were discarded into orbit while launching earlier version of Starlink satellites.Observations confirm these V2 mini satellites host two solar panels like the Starship V2 satellites.",2023-02-27
+92,Group 5-15,v1.5,2023-099,"16 July 2023, 03:50","Cape Canaveral,SLC-40",530 km (330 mi),43.0°,54,,54,Success,,2023-07-16
+90,Group 5-13,v1.5,2023-094,"7 July 2023, 19:29","Vandenberg,SLC-4E",530 km (330 mi),43.0°,48,,47,Success,,2023-07-07
+89,Group 5-12,v1.5,2023-090,"23 June 2023, 15:35","Cape Canaveral,SLC-40",530 km (330 mi),43.0°,56,,56,Success,,2023-06-23
+87,Group 5-11,v1.5,2023-083,"12 June 2023, 07:10","Cape Canaveral,SLC-40",530 km (330 mi),43.0°,52,,52,Success,,2023-06-12
+78,Group 5-10,v1.5,2023-046,"29 March 2023, 20:01","Cape Canaveral,SLC-40",530 km (330 mi),43.0°,56,,56,Success,,2023-03-29
+83,Group 5-9,v1.5,2023-065,"14 May 2023, 05:03","Cape Canaveral,SLC-40",530 km (330 mi),43.0°,56,,55,Success,,2023-05-14
+88,Group 5-7,v1.5,2023-088,"22 June 2023, 07:19","Vandenberg,SLC-4E",530 km (330 mi),43.0°,47,,47,Success,,2023-06-22
+81,Group 5-6,v1.5,2023-061,"4 May 2023, 07:31","Cape Canaveral,SLC-40",530 km (330 mi),43.0°,56,,55,Success,,2023-05-04
+77,Group 5-5,v1.5,2023-042,"24 March 2023, 15:43","Cape Canaveral,SLC-40",530 km (330 mi),43.0°,56,,56,Success,,2023-03-24
+72,Group 5-4,v1.5,2023-020,"12 February 2023, 5:10","Cape Canaveral,SLC-40",530 km (330 mi),43.0°,55,,54,Success,,2023-02-12
+71,Group 5-3,v1.5,2023-015,"2 February 2023, 7:58","Kennedy,LC-39A",530 km (330 mi),43.0°,53,,51,Success,,2023-02-02
+69,Group 5-2,v1.5,2023-013,"26 January 2023, 9:32","Cape Canaveral,SLC-40",530 km (330 mi),43.0°,56,,55,Success,,2023-01-26
+67,Group 5-1,v1.5,2022-177,"28 December 2022, 9:34","Cape Canaveral,SLC-40",530 km (330 mi),43.0°,54,,54,Success,First launch into an initial shell of the second generation Starlink constellation.,2022-12-28
+66,Group 4-37,v1.5,2022-175,"17 December 2022, 21:32","Kennedy,LC-39A",540 km (340 mi),53.2°,54,,54,Success,,2022-12-17
+64,Group 4-36,v1.5,2022-136,"20 October 2022, 14:50:40","Cape Canaveral,SLC-40",540 km (340 mi),53.2°,54,,53,Success,,2022-10-20
+62,Group 4-35,v1.5,2022-119,"24 September 2022, 23:32:10","Cape Canaveral,SLC-40",540 km (340 mi),53.2°,52,,51,Success,,2022-09-24
+61,Group 4-34,v1.5,2022-114,"19 September 2022, 00:18:40","Cape Canaveral,SLC-40",540 km (340 mi),53.2°,54,,53,Success,,2022-09-19
+65,Group 4-31,v1.5,2022-141,"28 October 2022, 01:14","Vandenberg,SLC-4E",540 km (340 mi),53.2°,53,,52,Success,,2022-10-28
+63,Group 4-29,v1.5,2022-125,"5 October 2022, 23:10:30","Vandenberg,SLC-4E",540 km (340 mi),53.2°,52,,52,Success,,2022-10-05
+56,Group 4-27,v1.5,2022-101,"19 August 2022, 19:21:20","Cape Canaveral,SLC-40",540 km (340 mi),53.2°,53,,53,Success,,2022-08-19
+54,Group 4-26,v1.5,2022-097,"10 August 2022, 02:14:40","Kennedy,LC-39A",540 km (340 mi),53.2°,52,,51,Success,,2022-08-10
+53,Group 4-25,v1.5,2022-086,"24 July 2022, 13:38:20","Kennedy,LC-39A",540 km (340 mi),53.2°,53,,51,Success,,2022-07-24
+57,Group 4-23,v1.5,2022-104,"28 August 2022, 03:41","Cape Canaveral,SLC-40",540 km (340 mi),53.2°,54,,51,Success,"Heaviest Falcon 9 launch carrying an east-coast Starlink network launch for 53.2° inclination orbit located at 540 km altitude. This flight, Group 4-23, was moved from 39A to 40 to de-conflict withArtemis Ioperations at 39B, and booster B1069.2 from the 4-20 mission was swapped with B1067.6.",2022-08-28
+51,Group 4-22,v1.5,2022-083,"17 July 2022, 14:20","Cape Canaveral,SLC-40",540 km (340 mi),53.2°,53,,53,Success,,2022-07-17
+49,Group 4-21,v1.5,2022-076,"7 July 2022, 13:11:10","Cape Canaveral,SLC-40",540 km (340 mi),53.2°,53,,52,Success,,2022-07-07
+59,Group 4-20,v1.5,2022-107,"5 September 2022, 02:09:40","Cape Canaveral,SLC-40",540 km (340 mi),53.2°,51,,46,Success,"Rideshare satellites:Sherpa-LTC2carried a sole hosted payload will be Boeing's Varuna Technology Demonstration Mission, a pathfinder for a planned constellation of broadband satellites.",2022-09-05
+48,Group 4-19,v1.5,2022-062,"17 June 2022, 16:09:20","Kennedy,LC-39A",540 km (340 mi),53.2°,53,,53,Success,,2022-06-17
+47,Group 4-18,v1.5,2022-053,"18 May 2022, 10:59:40","Kennedy,LC-39A",540 km (340 mi),53.2°,53,,53,Success,,2022-05-18
+44,Group 4-17,v1.5,2022-049,"6 May 2022, 09:42","Kennedy,LC-39A",540 km (340 mi),53.2°,53,,53,Success,,2022-05-06
+43,Group 4-16,v1.5,2022-045,"29 April 2022, 21:27:10","Cape Canaveral,SLC-40",540 km (340 mi),53.2°,53,,52,Success,,2022-04-29
+46,Group 4-15,v1.5,2022-052,"14 May 2022, 20:40:50","Cape Canaveral,SLC-40",540 km (340 mi),53.2°,53,,53,Success,,2022-05-14
+42,Group 4-14,v1.5,2022-041,"21 April 2022, 17:51:40","Cape Canaveral,SLC-40",540 km (340 mi),53.2°,53,,51,Success,,2022-04-21
+45,Group 4-13,v1.5,2022-051,"13 May 2022, 22:07:50","Vandenberg,SLC-4E",540 km (340 mi),53.2°,53,,53,Success,,2022-05-13
+41,Group 4-12,v1.5,2022-029,"19 March 2022, 04:42:30","Cape Canaveral,SLC-40",540 km (340 mi),53.2°,53,,47,Success,,2022-03-19
+38,Group 4-11,v1.5,2022-017,"25 February 2022, 17:12:10","Vandenberg,SLC-4E",540 km (340 mi),53.2°,50,,48,Success,,2022-02-25
+40,Group 4-10,v1.5,2022-025,"9 March 2022, 13:45:10","Cape Canaveral,SLC-40",540 km (340 mi),53.2°,48,,47,Success,Starlink 3680 (or Starlink 2022-025P) launched in this stack has maneuvered and moved to Shell 1 of starlink satellites. Possibly some other satellites in this stack will also joining the Shell 1 Starlinks in near future.,2022-03-09
+39,Group 4-9,v1.5,2022-022,"3 March 2022, 14:25","Kennedy,LC-39A",540 km (340 mi),53.2°,47,,47,Success,,2022-03-03
+37,Group 4-8,v1.5,2022-016,"21 February 2022, 14:44:20","Cape Canaveral,SLC-40",540 km (340 mi),53.2°,46,,46,Success,,2022-02-21
+36,Group 4-7,v1.5,2022-010,"3 February 2022, 18:13:20","Kennedy,LC-39A",540 km (340 mi),53.2°,49,,10,Success,"On 4 February 2022, the satellites deployed on this mission were significantly impacted by aG2-ratedgeomagnetic storm. The satellites were commanded into a safe mode, but increased atmospheric drag prevented the satellites from leaving safe mode to begin maneuvering from the low deployment altitude to an operational orbit. On 8 February 2022, SpaceX confirmed that up to 40 of the 49 deployed satellites will reenter or have reentered the Earth's atmosphere.By 12 February, 38 satellites had reentered the atmosphere while the remaining 11 continued to raise their orbits.",2022-02-03
+35,Group 4-6,v1.5,2022-005,"19 January 2022, 02:02:40","Kennedy,LC-39A",540 km (340 mi),53.2°,49,,49,Success,,2022-01-19
+34,Group 4-5,v1.5,2022-001,"6 January 2022, 21:49:10","Kennedy,LC-39A",540 km (340 mi),53.2°,49,,49,Success,,2022-01-06
+33,Group 4-4,v1.5,2021-125,"18 December 2021, 12:41:40","Vandenberg,SLC-4E",540 km (340 mi),53.2°,52,,49,Success,,2021-12-18
+32,Group 4-3,v1.5,2021-115,"2 December 2021, 23:12:15","Cape Canaveral,SLC-40",540 km (340 mi),53.2°,48,,48,Success,Rideshare satellites: BlackSky-16 Gen-2 and BlackSky-17 Gen-2.,2021-12-02
+60,Group 4-2,v1.5,2022-111,"11 September 2022, 01:20","Kennedy,LC-39A",540 km (340 mi),53.2°,34,,31,Success,Rideshare satellites: BlueWalker-3 was released into a 513 km circular orbit.,2022-09-11
+31,Group 4-1,v1.5,2021-104,"13 November 2021, 11:19:30","Cape Canaveral,SLC-40",540 km (340 mi),53.2°,53,,52,Success,First launch of Group 4 Starlink satellites.,2021-11-13
+80,Group 3-5,v1.5,2023-058,"27 April 2023, 13:40","Vandenberg,SLC-4E",560 km (350 mi),97.6°,46,,46,Success,,2023-04-27
+58,Group 3-4,v1.5,2022-105,"31 August 2022, 05:40:10","Vandenberg,SLC-4E",560 km (350 mi),97.6°,46,,46,Success,,2022-08-31
+55,Group 3-3,v1.5,2022-099,"12 August 2022, 21:40:20","Vandenberg,SLC-4E",560 km (350 mi),97.6°,46,,46,Success,,2022-08-12
+52,Group 3-2,v1.5,2022-084,"22 July 2022, 17:39:40","Vandenberg,SLC-4E",560 km (350 mi),97.6°,46,,46,Success,,2022-07-22
+50,Group 3-1,v1.5,2022-077,"11 July 2022, 01:39:40","Cape Canaveral,SLC-40",560 km (350 mi),97.6°,46,,46,Success,,2022-07-11
+85,Group 2-10,v1.5,2023-078,"31 May 2023, 06:02","Vandenberg,SLC-4E",570 km (350 mi),70.0°,52,,52,Success,,2023-05-31
+82,Group 2-9,v1.5,2023-064,"10 May 2023, 20:09","Vandenberg,SLC-4E",570 km (350 mi),70.0°,51,,51,Success,,2023-05-10
+76,Group 2-8,v1.5,2023-037,"17 March 2023, 19:26","Vandenberg,SLC-4E",570 km (350 mi),70.0°,52,,52,Success,,2023-03-17
+75,Group 2-7,v1.5,2023-028,"3 March 2023, 18:38","Vandenberg,SLC-4E",570 km (350 mi),70.0°,51,,51,Success,,2023-03-03
+70,Group 2-6,v1.5,2023-014,"31 January 2023, 16:15","Vandenberg,SLC-4E",570 km (350 mi),70.0°,49,,48,Success,"Rideshare satellites: ION SCV-009 carries HPS' ADEO-N3,EPFL's Bunny, and StardustMe's SD-1 as hosted payloads.ION SCV-009 will deploy a satellite simulator usingEBAD's8"" Payload Release Ring.",2023-01-31
+73,Group 2-5,v1.5,2023-021,"17 February 2023, 19:12","Vandenberg,SLC-4E",570 km (350 mi),70.0°,51,,50,Success,,2023-02-17
+68,Group 2-4,v1.5,2023-010,"19 January 2023, 15:43","Vandenberg,SLC-4E",570 km (350 mi),70.0°,51,,50,Success,,2023-01-19
+30,Group 2-1,v1.5,2021-082,"14 September 2021, 03:55:50","Vandenberg,SLC-4E",570 km (350 mi),70.0°,51,,51,Success,"First launch of operational Starlink satellites fromVandenberg Space Force Base, and first launch into a high-inclination, non-SSOorbit. Musk stated that the operational satellites were version 1.5 and featured ""laser inter-satellite links, which are needed for high latitudes and mid-ocean coverage"".",2021-09-14
