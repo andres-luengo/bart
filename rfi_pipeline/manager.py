@@ -11,7 +11,8 @@ import logging, logging.handlers
 
 import json
 
-from typing import Any
+from typing import Any, Callable, Sequence
+from os import PathLike
 
 import resource
 
@@ -23,20 +24,20 @@ import datetime as dt
 # manages resources
 class RunManager:
     def __init__(
-            self, 
+            self,
+            file_job: Callable[[Path], pd.DataFrame],
             process_params: dict[str, Any],
             num_batches: int, 
             num_processes: int, 
-            files: tuple[Path, ...], 
-            outdir: Path,
+            files: Sequence[PathLike], 
+            outdir: PathLike,
             max_rss: int,
     ):
+        self.file_job = file_job
         self.process_params = process_params
         self.num_processes = num_processes
-        self.batches: tuple[tuple[Path, ...], ...] = tuple(
-            files[i::num_batches] for i in range(num_batches)
-        )
-        self.outdir = outdir
+        self.batches = self._make_batches(files, num_batches)
+        self.outdir = Path(outdir)
         self._logger = logging.getLogger(__name__)
         self.max_rss = max_rss
 
@@ -49,6 +50,17 @@ class RunManager:
 
         self._completed_files = self._get_completed_files()
     
+    def _make_batches(
+            self, all_files: Sequence[PathLike], num_batches: int
+    ) -> Sequence[Sequence[PathLike]]:
+        batches = []
+        for batch_idx in range(num_batches):
+            batch = []
+            for file in all_files[batch_idx::num_batches]:
+                batch.append(Path(file))
+            batches.append(tuple(batch))
+        return tuple(batches)
+        
     def _setup_meta(self):
         meta = {
             'start_time': dt.datetime.now(dt.timezone.utc).isoformat(),
@@ -85,17 +97,19 @@ class RunManager:
         return set(completed_files)
 
     @classmethod
-    def from_namespace(cls, arg: Namespace, files: tuple[Path, ...]):
+    def from_namespace(cls, filejob: Callable[[PathLike], pd.DataFrame], arg: Namespace, files: tuple[Path, ...]):
         return cls(
-            process_params = {
-                'freq_window': arg.frequency_block_size,
-                'warm_significance': arg.warm_significance,
-                'hot_significance': arg.hot_significance,
-                'hotter_significance': arg.hotter_significance,
-                'sigma_clip': arg.sigma_clip,
-                'min_freq': arg.min_freq,
-                'max_freq': arg.max_freq
-            },
+            filejob,
+            # process_params = {
+            #     'freq_window': arg.frequency_block_size,
+            #     'warm_significance': arg.warm_significance,
+            #     'hot_significance': arg.hot_significance,
+            #     'hotter_significance': arg.hotter_significance,
+            #     'sigma_clip': arg.sigma_clip,
+            #     'min_freq': arg.min_freq,
+            #     'max_freq': arg.max_freq
+            # },
+            process_params=vars(arg),
             num_batches=arg.num_batches,
             num_processes=arg.num_processes,
             files=files,
@@ -135,6 +149,7 @@ class RunManager:
 
             batch_args = (
                 {
+                    'file_job': self.file_job,
                     'batch': tuple(file for file in batch if file not in self._completed_files),
                     'batch_num': i,
                     'process_params': self.process_params,

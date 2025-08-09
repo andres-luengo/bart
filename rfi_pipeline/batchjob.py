@@ -4,7 +4,7 @@ from pathlib import Path
 
 import logging
 
-from typing import Any
+from typing import Any, Callable, Sequence
 from threading import Lock
 
 import datetime as dt
@@ -16,7 +16,7 @@ MAX_PROGRESS_LIST_LENGTH = 64
 import os
 import time
 
-import hdf5plugin # dumb
+import hdf5plugin # dumb. h5py import doesn't work unless this import comes beforehand.
 import h5py
 
 from .filejob import FileJob
@@ -28,12 +28,14 @@ from .filejob import FileJob
 class BatchJob:
     def __init__(
             self, *,
+            file_job: Callable[[Path], pd.DataFrame],
             process_params: dict[str, Any],
             outdir: Path, 
-            batch: tuple[Path, ...], 
+            batch: Sequence[Path], 
             meta_lock: Lock,
             batch_num: int = -1,
     ):
+        self.file_job = file_job
         self._logger = logging.getLogger(f'{__name__} (batch {batch_num:>03})')
 
         self.process_params = process_params
