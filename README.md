@@ -2,6 +2,17 @@
 
 A Python package for detecting and analyzing Radio Frequency Interference (RFI) in astronomical observation data.
 
+## Documentation
+
+📚 **[Full Documentation](docs/_build/html/index.html)** - Complete usage guide, API reference, and examples
+
+To build the documentation locally:
+```bash
+pip install -e ".[docs]"
+cd docs
+make html
+```
+
 ## Description
 
 The RFI Pipeline is designed to process large volumes of astronomical data stored in HDF5 format, identifying potential radio frequency interference through statistical analysis. The pipeline uses multi-processing capabilities to efficiently handle large datasets and provides detailed logging for monitoring the analysis process.

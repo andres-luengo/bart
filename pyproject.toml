@@ -46,8 +46,9 @@ dev = [
     "jupyter",
 ]
 docs = [
-    "sphinx",
-    "sphinx-rtd-theme",
+    "sphinx>=4.0.0",
+    "sphinx-rtd-theme>=1.0.0",
+    "sphinx-autobuild>=2021.3.14",
 ]
 
 [project.urls]
