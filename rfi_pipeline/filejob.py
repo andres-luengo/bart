@@ -1,3 +1,10 @@
+"""
+File Job Module
+
+This module provides the FileJob class for processing individual HDF5 files
+and detecting RFI using statistical filtering methods.
+"""
+
 import hdf5plugin # dumb
 import h5py
 
@@ -11,6 +18,7 @@ from pathlib import Path
 import logging
 
 from typing import Any
+from os import PathLike
 
 import time
 
@@ -21,16 +29,28 @@ import warnings
 from numba import njit
 logging.getLogger('numba').setLevel(logging.WARNING)
 
-# stuff to think about
-# - load in big files in sections (not all at once)
-# - only fit middle slice (or a few)
-# - multiple signals? count_peaks?
-# - bliss
-# - just find width at half max 
 
-# these are run serially within each process, but the OOP makes things neat
 class FileJob:
-    def __init__(self, file: Path | str, process_params: dict[str, Any]):
+    """
+    Processes individual HDF5 files for RFI detection.
+    
+    The FileJob class handles loading astronomical observation data from HDF5 files
+    and applies a multi-stage statistical filtering algorithm to detect radio
+    frequency interference. The algorithm uses configurable significance thresholds
+    and frequency windowing.
+    
+    Attributes:
+        _file: HDF5 file handle
+        _logger: Logger instance for this job
+        
+    Processing Pipeline:
+        1. Load data in frequency blocks
+        2. Apply warm significance filtering (sigma-based)
+        3. Apply hot significance filtering (MAD-based)  
+        4. Apply hotter significance filtering (SNR-based with sigma clipping)
+        5. Extract frequency and kurtosis features
+    """
+    def __init__(self, file: PathLike, process_params: dict[str, Any]):
         file = Path(file)
 
         m = re.search(r'\/([^\/]+)$', str(file))
@@ -96,6 +116,13 @@ class FileJob:
         end_time = time.perf_counter()
         self._logger.info(f'Finished file! Took {end_time - start_time:.3g}s')
         return df
+    
+    def __call__(self): return self.run()
+
+    @classmethod
+    def run_func(cls, file: PathLike, process_params: dict[str, Any]) -> pd.DataFrame:
+        fj = cls(file, process_params)
+        return fj()
     
     def filter_blocks(self) -> np.ndarray:
         """Returns the lower index for every block that passes the warm and hot index filters"""

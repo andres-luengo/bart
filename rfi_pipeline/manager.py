@@ -1,3 +1,10 @@
+"""
+Run Manager Module
+
+This module provides the RunManager class for coordinating parallel RFI detection
+across multiple files and batches.
+"""
+
 import pandas as pd
 
 from .batchjob import BatchJob
@@ -18,14 +25,26 @@ import resource
 
 import datetime as dt
 
-# splits up files into batches
-# does multiprocessing stuff
-# manages file nonsense
-# manages resources
+
 class RunManager:
+    """
+    Manages the execution of RFI detection across multiple files and processes.
+    
+    The RunManager coordinates parallel processing by dividing input files into
+    batches and distributing them across multiple worker processes. It handles
+    resource management, progress tracking, and result consolidation.
+    
+    Attributes:
+        file_job: Function to process individual files
+        process_params: Parameters for the file processing function
+        num_processes: Number of parallel worker processes
+        batches: List of file batches for processing
+        outdir: Output directory for results
+        max_rss: Maximum memory usage in bytes
+    """
     def __init__(
             self,
-            file_job: Callable[[Path], pd.DataFrame],
+            file_job: Callable[[PathLike, dict[str, Any]], pd.DataFrame],
             process_params: dict[str, Any],
             num_batches: int, 
             num_processes: int, 
@@ -33,6 +52,18 @@ class RunManager:
             outdir: PathLike,
             max_rss: int,
     ):
+        """
+        Initialize the RunManager.
+        
+        Args:
+            file_job: Function to process individual files, should return DataFrame
+            process_params: Dictionary of parameters for the file processing function
+            num_batches: Number of batches to divide files into
+            num_processes: Number of parallel worker processes
+            files: Sequence of file paths to process
+            outdir: Output directory for results and metadata
+            max_rss: Maximum memory usage in bytes
+        """
         self.file_job = file_job
         self.process_params = process_params
         self.num_processes = num_processes
@@ -97,7 +128,7 @@ class RunManager:
         return set(completed_files)
 
     @classmethod
-    def from_namespace(cls, filejob: Callable[[PathLike], pd.DataFrame], arg: Namespace, files: tuple[Path, ...]):
+    def from_namespace(cls, filejob: Callable[[PathLike, dict[str, Any]], pd.DataFrame], arg: Namespace, files: tuple[Path, ...]):
         return cls(
             filejob,
             # process_params = {

@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 
 from .manager import RunManager
+from .filejob import FileJob
 
 import logging, logging.handlers
 import shutil
@@ -219,7 +220,7 @@ def main():
     make_outdir(args)
     logging_setup(args)
     files = get_file_names(args.infile)
-    manager = RunManager.from_namespace(args, files)
+    manager = RunManager.from_namespace(FileJob.run_func, args, files)
     manager.run()
 
 if __name__ == '__main__': main()

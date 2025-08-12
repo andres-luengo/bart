@@ -1,3 +1,10 @@
+"""
+Batch Job Module
+
+This module provides the BatchJob class for processing batches of files
+in parallel worker processes, handling progress tracking and result storage.
+"""
+
 import pandas as pd
 
 from pathlib import Path
@@ -21,14 +28,26 @@ import h5py
 
 from .filejob import FileJob
 
-# stuff to think about:
-# - SIGINT
-# - getting rid of gaussian fitting step
 
 class BatchJob:
+    """
+    Processes a batch of files within a single worker process.
+    
+    The BatchJob class manages the processing of a subset of files assigned to
+    a worker process. It handles individual file processing, progress tracking,
+    result accumulation, and saving batch results to CSV files.
+    
+    Attributes:
+        file_job: Function to process individual files
+        process_params: Parameters for file processing
+        batch: List of files in this batch
+        batch_num: Numeric identifier for this batch
+        save_path: Path where batch results will be saved
+        files_csv_path: Path to the files metadata CSV
+    """
     def __init__(
             self, *,
-            file_job: Callable[[Path], pd.DataFrame],
+            file_job: Callable[[os.PathLike, dict[str, Any]], pd.DataFrame],
             process_params: dict[str, Any],
             outdir: Path, 
             batch: Sequence[Path], 
@@ -67,7 +86,8 @@ class BatchJob:
             try:
                 # Extract file header information
                 file_info = self._extract_file_info(file)
-                df = FileJob(file, self.process_params).run()
+                # df = FileJob(file, self.process_params).run()
+                df = self.file_job(file, self.process_params)
             except Exception:
                 self._logger.error(f'Something went wrong on file {file}!', exc_info=True)
                 df = None
