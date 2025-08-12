@@ -177,37 +177,6 @@ def make_outdir(args: argparse.Namespace):
 
     shutil.copyfile(args.infile, args.outdir / 'target-list.txt')
 
-def logging_setup(args: argparse.Namespace):
-    logger = logging.getLogger()
-
-    formatter = logging.Formatter(
-        '%(asctime)s | %(levelname)s | %(name)s (%(process)d): %(message)s'
-    )
-
-    level = 30 + 10 * (args.quiet - args.verbose)
-    stderr_handler = logging.StreamHandler()
-    stderr_handler.setLevel(level)
-    stderr_handler.setFormatter(formatter)
-
-    file_handler = logging.handlers.RotatingFileHandler(
-        filename = args.outdir / 'logs' / 'all_logs.log',
-        maxBytes = 2**20, # 1 MiB
-        backupCount = 3, # so max of 4 MiB,
-    )
-    file_handler.setLevel(min(logging.INFO, level))
-    file_handler.setFormatter(formatter)
-
-    # if error files long enough that this is a problem, there are bigger ones
-    err_file_handler = logging.FileHandler(
-        filename = args.outdir / 'logs' / 'error_logs.log'
-    )
-    err_file_handler.setLevel(logging.ERROR)
-    err_file_handler.setFormatter(formatter)
-
-    logger.addHandler(stderr_handler)
-    logger.addHandler(file_handler)
-    logger.addHandler(err_file_handler)
-    logger.setLevel(logging.DEBUG)
 
 def get_file_names(file: Path) -> tuple[Path, ...]:
     with file.open('r') as f:
@@ -218,9 +187,8 @@ def get_file_names(file: Path) -> tuple[Path, ...]:
 def main():
     args = parse_args()
     make_outdir(args)
-    logging_setup(args)
     files = get_file_names(args.infile)
-    manager = RunManager.from_namespace(FileJob.run_func, args, files)
+    manager = RunManager._from_namespace(FileJob.run_func, args, files)
     manager.run()
 
 if __name__ == '__main__': main()

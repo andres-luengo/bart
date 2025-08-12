@@ -45,12 +45,13 @@ class RunManager:
     def __init__(
             self,
             file_job: Callable[[PathLike, dict[str, Any]], pd.DataFrame],
-            process_params: dict[str, Any],
-            num_batches: int, 
-            num_processes: int, 
-            files: Sequence[PathLike], 
+            process_params: dict[str, Any], 
+            files: Sequence[PathLike],
             outdir: PathLike,
-            max_rss: int,
+            num_batches: int = 1, 
+            num_processes: int = 1,
+            max_rss: int = 8,
+            log_level: int = logging.WARNING,
     ):
         """
         Initialize the RunManager.
@@ -66,10 +67,19 @@ class RunManager:
         """
         self.file_job = file_job
         self.process_params = process_params
+        
         self.num_processes = num_processes
         self.batches = self._make_batches(files, num_batches)
+        
         self.outdir = Path(outdir)
+        self.outdir.mkdir(exist_ok=True)
+        (self.outdir / 'batches').mkdir(exist_ok=True)
+        (self.outdir / 'logs').mkdir(exist_ok=True)
+        self._save_targets_copy(files)
+
         self._logger = logging.getLogger(__name__)
+        self._logging_setup(level=log_level)
+        
         self.max_rss = max_rss
 
         self._setup_meta()
@@ -81,6 +91,41 @@ class RunManager:
 
         self._completed_files = self._get_completed_files()
     
+    def _save_targets_copy(self, targets: Sequence[PathLike]):
+        with (self.outdir / 'target-list.txt').open('w') as f:
+            f.writelines(str(path) for path in targets)
+
+    def _logging_setup(self, level=logging.WARNING):
+        (self.outdir / 'logs').mkdir(exist_ok=True)
+
+        formatter = logging.Formatter(
+            '%(asctime)s | %(levelname)s | %(name)s (%(process)d): %(message)s'
+        )
+
+        stderr_handler = logging.StreamHandler()
+        stderr_handler.setLevel(level)
+        stderr_handler.setFormatter(formatter)
+
+        file_handler = logging.handlers.RotatingFileHandler(
+            filename = self.outdir / 'logs' / 'all_logs.log',
+            maxBytes = 2**20, # 1 MiB
+            backupCount = 3, # so max of 4 MiB,
+        )
+        file_handler.setLevel(min(logging.INFO, level))
+        file_handler.setFormatter(formatter)
+
+        # if error files long enough that this is a problem, there are bigger ones
+        err_file_handler = logging.FileHandler(
+            filename = self.outdir / 'logs' / 'error_logs.log'
+        )
+        err_file_handler.setLevel(logging.ERROR)
+        err_file_handler.setFormatter(formatter)
+
+        self._logger.addHandler(stderr_handler)
+        self._logger.addHandler(file_handler)
+        self._logger.addHandler(err_file_handler)
+        self._logger.setLevel(logging.DEBUG)
+
     def _make_batches(
             self, all_files: Sequence[PathLike], num_batches: int
     ) -> Sequence[Sequence[PathLike]]:
