@@ -131,7 +131,7 @@ class RunManager:
         return set(completed_files)
 
     @classmethod
-    def from_namespace(cls, filejob: Callable[[PathLike, dict[str, Any]], pd.DataFrame], arg: Namespace, files: tuple[Path, ...]):
+    def _from_namespace(cls, filejob: Callable[[PathLike, dict[str, Any]], pd.DataFrame], arg: Namespace, files: tuple[Path, ...]):
         return cls(
             filejob,
             # process_params = {
@@ -152,7 +152,7 @@ class RunManager:
         )
     
     @staticmethod
-    def worker_init(log_queue: mp.Queue, max_memory: int):
+    def _worker_init(log_queue: mp.Queue, max_memory: int):
         handler = logging.handlers.QueueHandler(log_queue)
         logger = logging.getLogger()
         logger.handlers.clear()
@@ -162,7 +162,7 @@ class RunManager:
         resource.setrlimit(resource.RLIMIT_AS, (max_memory, max_memory))
     
     @staticmethod
-    def batch_job(kwargs: dict):
+    def _batch_job(kwargs: dict):
         try:
             job = BatchJob(**kwargs)
             return job.run()
@@ -203,7 +203,7 @@ class RunManager:
 
             with mp.Pool(
                 processes=self.num_processes,
-                initializer=self.worker_init,
+                initializer=self._worker_init,
                 initargs=(
                     log_queue, 
                     int(self.max_rss // self.num_processes)
@@ -211,7 +211,7 @@ class RunManager:
             ) as p:
                 # using this over map so that if anything raises it gets sent up ASAP
                 results = p.imap_unordered(
-                    self.batch_job, batch_args, chunksize=1
+                    self._batch_job, batch_args, chunksize=1
                 )
                 for _ in results: pass # consume lazy map
             
