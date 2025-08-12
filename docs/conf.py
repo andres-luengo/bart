@@ -46,6 +46,35 @@ autodoc_default_options = {
     'show-inheritance': True,
 }
 
+# Autodoc settings
+autodoc_typehints = 'description'
+autodoc_typehints_description_target = 'documented'
+
+# Don't include type annotations in signature for constants
+autodoc_preserve_defaults = True
+
+# Custom processing for module constants
+def skip_member(app, what, name, obj, skip, options):
+    """Skip certain members that cause documentation issues."""
+    # Skip string constants that show built-in str() documentation
+    if what == "data" and isinstance(obj, str) and name.startswith('__'):
+        return True
+    
+    # Skip private attributes and methods (those starting with single underscore)
+    # but keep special methods (those starting and ending with double underscores)
+    if name.startswith('_') and not (name.startswith('__') and name.endswith('__')):
+        return True
+    
+    # Skip most built-in methods but keep useful ones
+    useful_special_methods = {'__init__', '__call__'}
+    if name.startswith('__') and name.endswith('__') and name not in useful_special_methods:
+        return True
+    
+    return skip
+
+def setup(app):
+    app.connect('autodoc-skip-member', skip_member)
+
 # -- Options for napoleon ---------------------------------------------------
 napoleon_google_docstring = True
 napoleon_numpy_docstring = True

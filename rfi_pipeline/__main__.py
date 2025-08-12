@@ -2,7 +2,7 @@ import argparse
 from pathlib import Path
 
 from .manager import RunManager
-from .filejob import FileJob
+from .example.filejob import FileJob
 
 import logging, logging.handlers
 import shutil

@@ -81,8 +81,13 @@ rfi-finder file_list.txt /path/to/output --num-processes 4 --max-rss-gb 64
 
 ### Python API
 
+The RFI Pipeline provides a flexible framework for parallel processing of astronomical data files. 
+The main entry point is the `RunManager` class, which can work with custom file processing functions.
+An example implementation is provided in `rfi_pipeline.example.filejob`.
+
 ```python
-from rfi_pipeline import Manager
+from rfi_pipeline import RunManager
+from rfi_pipeline.example.filejob import FileJob
 from pathlib import Path
 
 # Set up processing parameters
@@ -92,9 +97,10 @@ process_params = {
     'hot_significance': 10.0
 }
 
-# Initialize manager
+# Initialize manager with the example file processor
 files = [Path("data1.h5"), Path("data2.h5")]
-manager = Manager(
+manager = RunManager(
+    file_job=FileJob.run_func,  # Use the example processor
     process_params=process_params,
     num_batches=10,
     num_processes=4,
@@ -104,6 +110,20 @@ manager = Manager(
 
 # Run processing
 manager.run()
+```
+
+You can also create your own custom file processing function that follows the same interface:
+
+```python
+def my_custom_processor(file_path, process_params):
+    # Your custom processing logic here
+    # Must return a pandas DataFrame with detection results
+    pass
+
+manager = RunManager(
+    file_job=my_custom_processor,
+    # ... other parameters
+)
 ```
 
 ### Progress Monitoring

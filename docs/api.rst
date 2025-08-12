@@ -13,8 +13,6 @@ Main Classes
    :nosignatures:
 
    RunManager
-   BatchJob
-   FileJob
 
 Core Modules
 ------------
@@ -26,25 +24,6 @@ Manager Module
    :members:
    :undoc-members:
    :show-inheritance:
-
-FileJob Module
-~~~~~~~~~~~~~~
-
-.. automodule:: rfi_pipeline.filejob
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-BatchJob Module
-~~~~~~~~~~~~~~~
-
-.. automodule:: rfi_pipeline.batchjob
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Command Line Tools
-------------------
 
 Check Progress Module
 ~~~~~~~~~~~~~~~~~~~~~
@@ -62,33 +41,28 @@ Merge Module
    :undoc-members:
    :show-inheritance:
 
-Utility Functions
------------------
+Example Implementations
+-----------------------
 
-The package provides several utility functions that can be used independently:
+File Job Example
+~~~~~~~~~~~~~~~~
 
-Statistical Functions
-~~~~~~~~~~~~~~~~~~~~~
-
-Functions for statistical analysis and filtering used in the RFI detection algorithm.
-
-.. note::
-   These functions are primarily used internally by the main classes but can be
-   accessed for custom processing workflows.
-
-Data I/O Functions
-~~~~~~~~~~~~~~~~~~
-
-Functions for reading and writing HDF5 files and CSV output data.
+.. automodule:: rfi_pipeline.example.filejob
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Constants and Configuration
 ---------------------------
 
-.. autodata:: rfi_pipeline.__version__
-   :annotation: = "0.1.0"
+.. py:data:: __version__
+   :type: str
+   :value: "0.1.0"
 
-.. autodata:: rfi_pipeline.__author__
-   :annotation: = "Breakthrough Listen"
+.. py:data:: __author__
+   :type: str
+   :value: "Breakthrough Listen"
 
-.. autodata:: rfi_pipeline.__description__
-   :annotation: = "Radio Frequency Interference Detection Pipeline"
+.. py:data:: __description__
+   :type: str
+   :value: "Radio Frequency Interference Detection Pipeline"

@@ -100,7 +100,7 @@ Programmatic Processing
 .. code-block:: python
 
     from rfi_pipeline import RunManager
-    from rfi_pipeline.filejob import FileJob
+    from rfi_pipeline.example.filejob import FileJob
     from pathlib import Path
     import logging
 
@@ -141,7 +141,7 @@ Processing Single Files
 
 .. code-block:: python
 
-    from rfi_pipeline.filejob import FileJob
+    from rfi_pipeline.example.filejob import FileJob
     from pathlib import Path
     import pandas as pd
 
@@ -174,7 +174,7 @@ Custom Analysis Pipeline
 .. code-block:: python
 
     from rfi_pipeline import RunManager
-    from rfi_pipeline.filejob import FileJob
+    from rfi_pipeline.example.filejob import FileJob
     from pathlib import Path
     import pandas as pd
     import numpy as np
@@ -378,6 +378,7 @@ Profiling Performance
 
     import time
     from pathlib import Path
+    from rfi_pipeline.example.filejob import FileJob
 
     def benchmark_processing(file_path, process_params, iterations=3):
         """Benchmark processing time for a single file."""

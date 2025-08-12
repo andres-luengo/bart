@@ -121,7 +121,7 @@ Basic Usage
 .. code-block:: python
 
     from rfi_pipeline import RunManager
-    from rfi_pipeline.filejob import FileJob
+    from rfi_pipeline.example import FileJob
     from pathlib import Path
 
     # Set up processing parameters
@@ -135,7 +135,8 @@ Basic Usage
         'max_freq': float('inf')
     }
 
-    # Initialize manager
+    # Initialize manager with the default file processor
+    # (you can also provide a custom file processing function)
     files = [Path("data1.h5"), Path("data2.h5")]
     manager = RunManager(
         file_job=FileJob.run_func,
@@ -149,6 +150,30 @@ Basic Usage
 
     # Run processing
     manager.run()
+
+Custom File Processors
+~~~~~~~~~~~~~~~~~~~~~~
+
+The RFI Pipeline is designed to work with custom file processing functions.
+The built-in processor is provided as an example in ``rfi_pipeline.example.filejob``.
+You can create your own file processor by implementing a function that takes
+a file path and processing parameters and returns a pandas DataFrame:
+
+.. code-block:: python
+
+    from rfi_pipeline.example.filejob import FileJob
+    
+    # Or create your own custom processor
+    def custom_file_processor(file_path, process_params):
+        # Your custom processing logic here
+        # Must return a pandas DataFrame with the required columns
+        pass
+    
+    manager = RunManager(
+        file_job=my_file_processor,  # or FileJob.run_func
+        process_params=process_params,
+        # ... other parameters
+    )
 
 Merge API
 ~~~~~~~~~
@@ -168,28 +193,6 @@ Merge API
         force=True
     )
     print(f"Merged data saved to: {output_path}")
-
-Processing Individual Files
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-    from rfi_pipeline.filejob import FileJob
-    from pathlib import Path
-
-    # Process a single file
-    process_params = {
-        'freq_window': 1024,
-        'warm_significance': 4.0,
-        'hot_significance': 8.0,
-        'hotter_significance': 7.0,
-        'sigma_clip': 3.0
-    }
-
-    result_df = FileJob.run_func(
-        file=Path("observation.h5"),
-        process_params=process_params
-    )
 
 Algorithm Details
 -----------------

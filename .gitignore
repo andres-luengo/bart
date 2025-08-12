@@ -70,6 +70,7 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+docs/_docs/
 
 # PyBuilder
 .pybuilder/
@@ -188,11 +189,23 @@ test/data/
 *.temp
 test_package.py
 
+# Development and testing
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Editor temporary files
+.#*
+\#*#
+*.swp
+*.swo
+*~
+
 # Build and packaging artifacts
 setup.cfg
-.tox/
-.coverage
-htmlcov/
 
 # Development utilities
 INSTALLATION_GUIDE.md

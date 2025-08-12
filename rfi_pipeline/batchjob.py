@@ -26,7 +26,7 @@ import time
 import hdf5plugin # dumb. h5py import doesn't work unless this import comes beforehand.
 import h5py
 
-from .filejob import FileJob
+from .example.filejob import FileJob
 
 
 class BatchJob:

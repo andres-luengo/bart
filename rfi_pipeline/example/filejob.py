@@ -1,8 +1,15 @@
 """
-File Job Module
+Example File Job Module
 
-This module provides the FileJob class for processing individual HDF5 files
-and detecting RFI using statistical filtering methods.
+This file provides an example implementation of a filter-based signal finding algorithm
+for use with the RFI Pipeline framework. This is intended as a reference implementation
+to demonstrate how to create custom file processing functions that work with RunManager.
+
+When running this package as a script (i.e. `python -m rfi-pipeline` or `rfi-pipeline`)
+it creates a run manager with `FileJob.run_func` as the default processor.
+
+Users are encouraged to create their own file processing functions based on their
+specific requirements and data analysis needs.
 """
 
 import hdf5plugin # dumb
@@ -32,16 +39,15 @@ logging.getLogger('numba').setLevel(logging.WARNING)
 
 class FileJob:
     """
-    Processes individual HDF5 files for RFI detection.
+    Example implementation for processing individual HDF5 files for RFI detection.
     
-    The FileJob class handles loading astronomical observation data from HDF5 files
+    This class demonstrates how to implement a file processor that works with the
+    RFI Pipeline framework. It handles loading astronomical observation data from HDF5 files
     and applies a multi-stage statistical filtering algorithm to detect radio
-    frequency interference. The algorithm uses configurable significance thresholds
-    and frequency windowing.
+    frequency interference. 
     
-    Attributes:
-        _file: HDF5 file handle
-        _logger: Logger instance for this job
+    This is provided as an example - users should create their own file processors
+    based on their specific analysis requirements.
         
     Processing Pipeline:
         1. Load data in frequency blocks
@@ -49,6 +55,8 @@ class FileJob:
         3. Apply hot significance filtering (MAD-based)  
         4. Apply hotter significance filtering (SNR-based with sigma clipping)
         5. Extract frequency and kurtosis features
+        
+    The key method is `run_func`, which provides the interface expected by RunManager.
     """
     def __init__(self, file: PathLike, process_params: dict[str, Any]):
         file = Path(file)

@@ -97,8 +97,11 @@ class RunManager:
             'start_time': dt.datetime.now(dt.timezone.utc).isoformat(),
             'outdir': str(self.outdir)
         } | self.process_params
-        with open(self.outdir / 'meta.json', 'w') as f:
-            json.dump(meta, f, indent=4)
+        try:
+            with open(self.outdir / 'meta.json', 'w') as f:
+                json.dump(meta, f, indent=4)
+        except TypeError as e:
+            raise TypeError('Keys and values in process_params must be json-serializable.') from e
     
     def _setup_new_progress_file(self):
         progress_data = [
