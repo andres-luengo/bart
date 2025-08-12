@@ -194,10 +194,14 @@ Merge API
     )
     print(f"Merged data saved to: {output_path}")
 
-Algorithm Details
------------------
+Example Algorithm Details
+-------------------------
 
-The RFI detection algorithm operates in multiple stages:
+Although this code is distributed with the intention that you write your own processing code, we provide
+the ``rfi_pipeline.example.filejob``
+The example RFI detection algorithm provided in ``rfi_pipeline.example.filejob`` was designed to find signals
+(any signals)
+operates in multiple stages:
 
 1. **Data Loading**: HDF5 files are loaded and divided into frequency blocks
 2. **Warm Filtering**: Initial filtering using sigma-based thresholds
@@ -223,7 +227,7 @@ Each detection includes:
 Output Structure
 ----------------
 
-The pipeline creates the following output structure::
+``rfi_pipeline`` creates the following output structure::
 
     output_directory/
     ├── batches/
@@ -252,9 +256,7 @@ Performance Considerations
 
 **Memory Usage:**
 
-* Each process loads data files incrementally to manage memory
-* Use ``--max-rss-gb`` to limit total memory consumption
-* Recommended: 32 GB × number of processes
+* Since the use of multiprocessing means you'll be reading in
 
 **Processing Speed:**
 

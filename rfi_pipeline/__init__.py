@@ -6,7 +6,7 @@ in astronomical observation data.
 """
 
 #: The version string of the RFI Pipeline package
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 #: The author/organization that developed the RFI Pipeline
 __author__ = "Breakthrough Listen"

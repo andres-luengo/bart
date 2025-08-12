@@ -94,8 +94,7 @@ docs/
 1. Update relevant `.rst` files
 2. Add docstrings to new code following Google/NumPy style
 3. Include practical examples
-4. Update changelog for new features
-5. Test documentation builds locally
+4. Test documentation builds locally
 
 ### Keeping Documentation Current
 - Docstrings automatically sync with API changes

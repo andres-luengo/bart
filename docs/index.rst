@@ -9,7 +9,6 @@ RFI Pipeline Documentation
    usage
    api
    examples
-   changelog
 
 Overview
 --------

@@ -57,7 +57,7 @@ Constants and Configuration
 
 .. py:data:: __version__
    :type: str
-   :value: "0.1.0"
+   :value: "0.2.0"
 
 .. py:data:: __author__
    :type: str
