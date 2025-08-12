@@ -5,7 +5,7 @@ This file provides an example implementation of a filter-based signal finding al
 for use with the RFI Pipeline framework. This is intended as a reference implementation
 to demonstrate how to create custom file processing functions that work with RunManager.
 
-When running this package as a script (i.e. `python -m rfi-pipeline` or `rfi-pipeline`)
+When running this package as a script (i.e. ``python -m rfi-pipeline`` or ``rfi-pipeline``)
 it creates a run manager with `FileJob.run_func` as the default processor.
 
 Users are encouraged to create their own file processing functions based on their
@@ -117,8 +117,8 @@ class FileJob:
     def run(self):
         start_time = time.perf_counter()
         
-        filtered_block_l_indices = self.filter_blocks()
-        hits = self.get_hits(filtered_block_l_indices)
+        filtered_block_l_indices = self._filter_blocks()
+        hits = self._get_hits(filtered_block_l_indices)
         df = pd.DataFrame(hits)
         
         end_time = time.perf_counter()
@@ -129,10 +129,21 @@ class FileJob:
 
     @classmethod
     def run_func(cls, file: PathLike, process_params: dict[str, Any]) -> pd.DataFrame:
+        """
+        Executes a file job for the given file and processing parameters.
+        Pass this method into file_job in RunManager to run the example pipeline.
+
+        Args:
+            file (PathLike): The path to the file to be processed.
+            process_params (dict[str, Any]): A dictionary of parameters to control the processing.
+        Returns:
+            pd.DataFrame: The resulting DataFrame after processing the file.
+        """
+        
         fj = cls(file, process_params)
         return fj()
     
-    def filter_blocks(self) -> np.ndarray:
+    def _filter_blocks(self) -> np.ndarray:
         """Returns the lower index for every block that passes the warm and hot index filters"""
         start_time = time.perf_counter()
 
@@ -143,18 +154,18 @@ class FileJob:
         ]
 
         self._logger.debug(f'Starting with {self._num_frequency_blocks} blocks.')
-        warm_indices = self.get_warm_indices(test_strip)
+        warm_indices = self._get_warm_indices(test_strip)
         self._logger.debug(f'Got {len(warm_indices)} warm blocks.')
-        hot_indices = self.get_hot_indices(test_strip, warm_indices)
+        hot_indices = self._get_hot_indices(test_strip, warm_indices)
         self._logger.debug(f'Got {len(hot_indices)} hot blocks.')
-        hotter_indices = self.get_hotter_indices(test_strip, hot_indices)
+        hotter_indices = self._get_hotter_indices(test_strip, hot_indices)
 
         end_time = time.perf_counter()
         self._logger.info(f'Done filtering blocks, took {end_time - start_time :.3g}s.')
         self._logger.info(f'Found {len(hotter_indices)} hotter blocks.')
         return hotter_indices
 
-    def get_warm_indices(self, test_strip: np.ndarray):
+    def _get_warm_indices(self, test_strip: np.ndarray):
         """
         Returns data indices (i.e. don't index into test_strip directly with these)
         """
@@ -166,7 +177,7 @@ class FileJob:
             if r_index > len(test_strip): break
             
             block_strip = test_strip[l_index:r_index]
-            self.smooth_dc_spike(block_strip, l_idx=(l_index + self._min_channel))
+            self._smooth_dc_spike(block_strip, l_idx=(l_index + self._min_channel))
             # probably makes it prefer bright narrowband signals but too soon to sigma clip
             others = np.delete(block_strip, np.argmax(block_strip))
 
@@ -177,7 +188,7 @@ class FileJob:
         
         return np.array(warm_indices)
 
-    def get_hot_indices(self, test_strip: np.ndarray, warm_indices: np.ndarray):
+    def _get_hot_indices(self, test_strip: np.ndarray, warm_indices: np.ndarray):
         """
         Returns data indices (i.e. don't index into test_strip directly with these)
         """
@@ -189,7 +200,7 @@ class FileJob:
             if r_index > len(test_strip): break
 
             strip = test_strip[l_index:r_index]
-            self.smooth_dc_spike(strip, l_idx=(l_index + self._min_channel))
+            self._smooth_dc_spike(strip, l_idx=(l_index + self._min_channel))
 
             strip_significance = (np.max(strip) - np.median(strip)) / scipy.stats.median_abs_deviation(strip)
 
@@ -197,7 +208,7 @@ class FileJob:
                 hot_indices.append(l_index + self._min_channel)
         return np.array(hot_indices)
     
-    def get_hotter_indices(self, test_strip: np.ndarray, hot_indices: np.ndarray) -> np.ndarray:
+    def _get_hotter_indices(self, test_strip: np.ndarray, hot_indices: np.ndarray) -> np.ndarray:
         hotter_indices = []
         for hot_index in hot_indices:
             hot_test_index = hot_index - self._min_channel
@@ -206,7 +217,7 @@ class FileJob:
             if r_index > len(test_strip): break
 
             strip = test_strip[l_index:r_index]
-            self.smooth_dc_spike(strip, l_idx=(l_index + self._min_channel))
+            self._smooth_dc_spike(strip, l_idx=(l_index + self._min_channel))
 
             clipped, _, _ = scipy.stats.sigmaclip(strip, self._sigma_clip, self._sigma_clip)
             noise = np.std(clipped)
@@ -221,7 +232,7 @@ class FileJob:
         
         return np.array(hotter_indices)    
 
-    def smooth_dc_spike(self, block: np.ndarray, l_idx: int, axis: int = -1):
+    def _smooth_dc_spike(self, block: np.ndarray, l_idx: int, axis: int = -1):
         """
         If there is a DC spike in `block`, replaces it with the average of the values to the left and right of it
         along the specified frequency axis. Otherwise, does nothing. Modifies `block` in place.
@@ -249,7 +260,7 @@ class FileJob:
             block[tuple(slicer_left)] + block[tuple(slicer_right)]
         ) / 2
     
-    def get_hits(self, block_l_indices: np.ndarray) -> list[dict[str, Any]]:
+    def _get_hits(self, block_l_indices: np.ndarray) -> list[dict[str, Any]]:
         start_time = time.perf_counter()
 
         # for <1000, generally fast enough to read in specific blocks
@@ -284,10 +295,10 @@ class FileJob:
 
             self._logger.debug(f'Done loading block, took {load_end_time - load_start_time:.3g}s.')
 
-            self.smooth_dc_spike(block, block_l_index)
+            self._smooth_dc_spike(block, block_l_index)
 
             fit_start_time = time.perf_counter()  
-            params = self.fit_frequency_thresholds(freq_array, block)
+            params = self._fit_frequency_thresholds(freq_array, block)
             fit_end_time = time.perf_counter()
             self._logger.debug(f'Done threshold-based estimation, took {fit_end_time - fit_start_time:.3g}s.')
             
@@ -370,7 +381,7 @@ class FileJob:
 
         return rows
 
-    def fit_frequency_thresholds(self, freq_array: np.ndarray, block: np.ndarray):
+    def _fit_frequency_thresholds(self, freq_array: np.ndarray, block: np.ndarray):
         """
         Applies threshold-based width estimation to each frequency slice of the block.
         Returns parameters for each slice, with dimensions (num_slices, 4).
@@ -381,7 +392,7 @@ class FileJob:
             slice_data = block[i, :]
             try:
                 # Get threshold-based parameters
-                mean_freq_idx, width, amplitude, noise_floor = threshold_based_width_estimation(slice_data)
+                mean_freq_idx, width, amplitude, noise_floor = _threshold_based_width_estimation(slice_data)
                 
                 if np.isnan(mean_freq_idx):
                     params = np.full((4,), np.nan)
@@ -397,7 +408,7 @@ class FileJob:
             all_params.append(params)
         return np.array(all_params)
     
-    def index_to_frequency(self, index: int):
+    def _index_to_frequency(self, index: int):
         return self._fch1 + index * self._foff
 
     def __del__(self):
@@ -405,12 +416,7 @@ class FileJob:
             self._file.close()
 
 @njit
-def signal_model(x, mean, stdev, amplitude, noise):
-    exponent = -0.5 * ((x - mean) / stdev)**2
-    return noise + amplitude * np.exp(exponent)
-
-@njit
-def threshold_based_width_estimation(spectrum):
+def _threshold_based_width_estimation(spectrum):
     """
     Threshold-based width estimation
     
