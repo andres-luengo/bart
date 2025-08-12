@@ -59,6 +59,18 @@ class FileJob:
     The key method is `run_func`, which provides the interface expected by RunManager.
     """
     def __init__(self, file: PathLike, process_params: dict[str, Any]):
+        """
+        Initialize a FileJob.
+
+        .. note::
+            This method does not actually perform any processing. If passing into :ref:`RunManager`,
+            use run_func instead.
+        
+        .. warning::
+            This method opens an h5py File. To make sure this file handler is closed properly,
+            make sure to call :ref:`.close()`, create this object in a with block 
+            (as in `with FileJob('some path', {}):`) or just use :ref:`run_func`.
+        """
         file = Path(file)
 
         m = re.search(r'\/([^\/]+)$', str(file))
@@ -115,6 +127,9 @@ class FileJob:
         self._num_frequency_blocks = self._num_even_frequency_blocks * 2 - 1
     
     def run(self):
+        """
+        Run an already-initialized FileJob.
+        """
         start_time = time.perf_counter()
         
         filtered_block_l_indices = self._filter_blocks()
@@ -141,7 +156,9 @@ class FileJob:
         """
         
         fj = cls(file, process_params)
-        return fj()
+        result = fj()
+        del fj
+        return result
     
     def _filter_blocks(self) -> np.ndarray:
         """Returns the lower index for every block that passes the warm and hot index filters"""
@@ -411,9 +428,12 @@ class FileJob:
     def _index_to_frequency(self, index: int):
         return self._fch1 + index * self._foff
 
-    def __del__(self):
-        if hasattr(self, '_file'):
-            self._file.close()
+    def close(self):
+        """Close the file handler used by this FileJob."""
+        self._file.close()
+
+    def __enter__(self): return self
+    def __exit__(self): self._file.close()
 
 @njit
 def _threshold_based_width_estimation(spectrum):
