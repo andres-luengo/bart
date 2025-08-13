@@ -84,7 +84,6 @@ class BatchJob:
             try:
                 # Extract file header information
                 file_info = self._extract_file_info(file)
-                # df = FileJob(file, self.process_params).run()
                 data = self.file_job(file)
                 df = pd.DataFrame(data)
             except Exception as e:

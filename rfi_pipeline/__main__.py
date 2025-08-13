@@ -199,7 +199,8 @@ def main():
         'min_freq': args.min_freq,
         'max_freq': args.max_freq,
     }
-    file_job = FileJob.with_params(process_params)
+    # Initialize a callable FileJob instance with global parameters
+    file_job = FileJob(process_params)
     manager = RunManager._from_namespace(file_job, args, files)
     manager.run()
 

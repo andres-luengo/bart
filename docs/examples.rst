@@ -100,7 +100,7 @@ Programmatic Processing
 .. code-block:: python
 
     from rfi_pipeline import RunManager
-    from rfi_pipeline.example.filejob import FileJob
+    from rfi_pipeline.example import FileJob
     from pathlib import Path
     import logging
 
@@ -116,8 +116,7 @@ Programmatic Processing
         files = [Path(line.strip()) for line in f.readlines()]
 
     # Create and run manager
-    manager = RunManager(
-        file_job=FileJob.with_params({
+    job = FileJob({
             'freq_window': 1024,
             'warm_significance': 4.0,
             'hot_significance': 8.0,
@@ -125,7 +124,9 @@ Programmatic Processing
             'sigma_clip': 3.0,
             'min_freq': 1000.0,
             'max_freq': 2000.0
-        }),
+    })
+    manager = RunManager(
+        file_job=job,
         num_batches=50,
         num_processes=4,
         files=tuple(files),
@@ -134,113 +135,6 @@ Programmatic Processing
     )
 
     manager.run()
-
-Processing Single Files
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-    from rfi_pipeline.example.filejob import FileJob
-    from pathlib import Path
-    import pandas as pd
-
-    # Process a single observation file
-    process_params = {
-        'freq_window': 1024,
-        'warm_significance': 4.0,
-        'hot_significance': 8.0,
-        'hotter_significance': 7.0,
-        'sigma_clip': 3.0
-    }
-
-    # Run processing
-    result_df = FileJob.run_func(
-        file=Path("/data/observations/single_obs.h5"),
-        process_params=process_params
-    )
-
-    # Analyze results
-    print(f"Found {len(result_df)} RFI detections")
-    print(f"Frequency range: {result_df['frequency'].min():.2f} - {result_df['frequency'].max():.2f}")
-    print(f"Mean kurtosis: {result_df['kurtosis'].mean():.2f}")
-
-    # Save results
-    result_df.to_csv("single_file_results.csv", index=False)
-
-Custom Analysis Pipeline
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-    from rfi_pipeline import RunManager
-    from rfi_pipeline.example.filejob import FileJob
-    from pathlib import Path
-    import pandas as pd
-    import numpy as np
-
-    class CustomAnalysis:
-        def __init__(self, output_dir):
-            self.output_dir = Path(output_dir)
-            self.results = []
-
-    def process_batch(self, files, process_params):
-            """Process a batch of files with custom analysis."""
-            batch_results = []
-            
-            for file in files:
-                try:
-                    df = FileJob.run_func(file, process_params)
-                    
-                    # Add custom metrics
-                    df['file_basename'] = file.name
-                    df['detection_density'] = len(df) / df['frequency'].nunique() if len(df) > 0 else 0
-                    
-                    batch_results.append(df)
-                    
-                except Exception as e:
-                    print(f"Error processing {file}: {e}")
-                    continue
-            
-            return pd.concat(batch_results, ignore_index=True) if batch_results else pd.DataFrame()
-
-        def analyze_results(self, merged_df):
-            """Perform post-processing analysis."""
-            if len(merged_df) == 0:
-                return {}
-            
-            analysis = {
-                'total_detections': len(merged_df),
-                'unique_frequencies': merged_df['frequency'].nunique(),
-                'mean_kurtosis': merged_df['kurtosis'].mean(),
-                'frequency_range': (merged_df['frequency'].min(), merged_df['frequency'].max()),
-                'files_with_rfi': merged_df['file_basename'].nunique(),
-                'detection_rate': len(merged_df) / merged_df['file_basename'].nunique()
-            }
-            
-            return analysis
-
-    # Usage
-    analyzer = CustomAnalysis("custom_output")
-    
-    # Process files
-    files = [Path(f"obs_{i:03d}.h5") for i in range(1, 11)]
-    process_params = {
-        'freq_window': 1024,
-        'warm_significance': 4.0,
-        'hot_significance': 8.0,
-        'hotter_significance': 7.0,
-        'sigma_clip': 3.0
-    }
-    
-    all_results = analyzer.process_batch(files, process_params)
-    analysis_summary = analyzer.analyze_results(all_results)
-    
-    print("Analysis Summary:")
-    for key, value in analysis_summary.items():
-        print(f"  {key}: {value}")
-
-Batch Processing Patterns
---------------------------
 
 Memory-Efficient Processing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -346,6 +240,9 @@ Tuning Parameters
 
 .. code-block:: python
 
+    from pathlib import Path
+    from rfi_pipeline.example import FileJob
+
     # Test different parameter combinations
     parameter_sets = [
         {'warm_significance': 3.0, 'hot_significance': 6.0},
@@ -360,13 +257,8 @@ Tuning Parameters
             'sigma_clip': 3.0,
             **params
         }
-        
         # Run on test file
-        result = FileJob.run_func(
-            file=Path("test_observation.h5"),
-            process_params=process_params
-        )
-        
+        result = FileJob(process_params).run(Path("test_observation.h5"))
         print(f"Parameter set {i+1}: {len(result)} detections")
         print(f"  Warm: {params['warm_significance']}, Hot: {params['hot_significance']}")
 
@@ -376,16 +268,18 @@ Profiling Performance
 .. code-block:: python
 
     import time
+    import numpy as np
     from pathlib import Path
     from rfi_pipeline.example.filejob import FileJob
 
     def benchmark_processing(file_path, process_params, iterations=3):
         """Benchmark processing time for a single file."""
         times = []
+        job = FileJob(process_params)
         
         for i in range(iterations):
             start_time = time.time()
-            result = FileJob.run_func(file_path, process_params)
+            result = job.run(file_path)
             end_time = time.time()
             
             processing_time = end_time - start_time

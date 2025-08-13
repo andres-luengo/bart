@@ -7,7 +7,7 @@ for use with the RFI Pipeline framework. This is intended as a reference impleme
 to demonstrate how to create custom file processing functions that work with :class:`rfi_pipeline.RunManager`.
 
 When running this package as a script (i.e. ``python -m rfi_pipeline`` or ``rfi-pipeline``)
-it creates a :class:`~rfi_pipeline.manager.RunManager` with :attr:`FileJob.run_func` as the file_job.
+it creates a :class:`~rfi_pipeline.manager.RunManager` with an instance of :class:`FileJob` as the file_job.
 
 Users are encouraged to create their own file processing functions based on their
 specific requirements and data analysis needs.
@@ -57,7 +57,13 @@ class FileJob:
         4. Apply hotter significance filtering (SNR-based with sigma clipping)
         5. Extract frequency and kurtosis features
         
-    The key method is :meth:`run_func`, which provides the interface expected by RunManager.
+    Usage:
+
+        job = FileJob(process_params)
+        hits = job.run(path)  # or: hits = job(path)
+
+    The instance is a callable that accepts a file path and returns rows convertible
+    to a pandas DataFrame, which matches the interface expected by RunManager.
     """
     def __init__(self, process_params: dict[str, Any]):
         """
@@ -77,12 +83,6 @@ class FileJob:
             - hot_significance (float): Threshold for hot significance detection.
             - hotter_significance (float): Threshold for hotter significance detection.
             - sigma_clip (float): Sigma clipping value for data cleaning.
-
-        Notes
-        -----
-        This class opens the HDF5 file inside run(file) and does not keep it open between calls.
-        Prefer the convenience helpers FileJob.run_func(file, params) for one-offs or
-        FileJob.with_params(params) when using RunManager.
         """
         self._max_freq = process_params['max_freq']
         self._min_freq = process_params['min_freq']

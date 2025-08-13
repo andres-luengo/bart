@@ -100,10 +100,11 @@ process_params = {
     'max_freq': float('inf'),
 }
 
+job = FileJob(process_params)
 # Initialize manager with the example file processor
 files = [Path("data1.h5"), Path("data2.h5")]
 manager = RunManager(
-    file_job=FileJob.with_params(process_params),
+    file_job=job,
     num_batches=10,
     num_processes=4,
     files=tuple(files),

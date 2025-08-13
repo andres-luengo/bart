@@ -123,7 +123,7 @@ Basic Usage
 .. code-block:: python
 
     from rfi_pipeline import RunManager
-    from rfi_pipeline.example import FileJob
+    from rfi_pipeline.example.filejob import FileJob
     from pathlib import Path
 
     # Example processing parameters for the example FileJob
@@ -140,8 +140,9 @@ Basic Usage
     # Initialize manager with the default file processor
     # (you can also provide a custom file processing function)
     files = [Path("data1.h5"), Path("data2.h5")]
+    job = FileJob(process_params)
     manager = RunManager(
-        file_job=FileJob.with_params(process_params),  # or functools.partial(my_processor, ...)
+        file_job=job,  # or functools.partial(my_processor, ...)
         num_batches=10,
         num_processes=4,
         files=tuple(files),
@@ -176,7 +177,7 @@ need global parameters, pre-bind them with functools.partial or a callable class
 
     file_job = partial(custom_file_processor, threshold=4.2, window=1024)
     manager = RunManager(
-        file_job=file_job,  # or FileJob.run_func
+        file_job=file_job,
         # ... other parameters
     )
 
