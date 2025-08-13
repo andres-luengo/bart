@@ -5,22 +5,18 @@ Run Manager Module
 Provides :class:`RunManager` to run a user ``file_job`` over files in parallel.
 
 ``file_job`` contract (must implement):
+
 * Signature: ``file_job(path, process_params) -> pandas.DataFrame``
 * One row per hit/result. Framework adds a ``source file`` column automatically.
-* Use ``logging`` (not ``print``) so output is captured from workers.
+* Use ``logging`` (that is, don't write directly to stdout with something like ``print``) so output is captured from workers.
 
-Aggregation:
-* Each returned DataFrame is appended to ``batches/batch_<NNN>.csv`` (header once).
-* Per‑file stats go to ``files.csv``; progress + timing go to ``progress-data.json``.
-* No cross‑file accumulation in RAM; row order across batches is not guaranteed.
+Each returned DataFrame is appended to ``batches/batch_<NNN>.csv`` (header once).
+To merge these batches, see :mod:`rfi_pipeline.merge`
 
-Errors:
-* Exceptions are logged; if ``continue_on_exception`` is False the run stops, else
-    the file is marked failed (``num_hits = -1``) and processing continues.
+Exceptions are logged; if ``continue_on_exception`` is False the run stops, else
+the file is marked failed (``num_hits = -1``) and processing continues.
 
-Memory:
-* A per‑process limit (derived from ``max_rss``) is set; keep per‑file DataFrames
-    modest in size.
+The max amount of memory per process is limited by the ``max_rss`` parameter.
 """
 
 import pandas as pd
@@ -48,6 +44,7 @@ class RunManager:
     """Run a ``file_job`` over files in parallel batches.
 
     Summary:
+
     * Partitions files into ``num_batches``.
     * Spawns a pool of ``num_processes`` workers.
     * Streams each file's DataFrame output into a batch CSV (+ metadata files).
@@ -65,15 +62,49 @@ class RunManager:
             log_level: int = logging.WARNING,
             continue_on_exception: bool = False
     ):
-        """Init.
+        """Initialize the pipeline manager for parallel file processing.
+            This constructor prepares batched work units, output / logging directories,
+            metadata, and a progress-tracking file used to resume or monitor execution.
+            
+            Parameters
+            ----------
+            file_job : Callable[[os.PathLike, dict[str, Any]], pandas.DataFrame]
+                A callable invoked for each input file. It must accept (path, process_params)
+                and return a pandas DataFrame with that file's results.
+            process_params : dict[str, Any]
+                A dictionary of parameters passed unchanged to every invocation of `file_job`.
+            files : Sequence[os.PathLike]
+                Iterable of input file paths to process.
+            outdir : os.PathLike
+                Root directory where outputs, logs, batch manifests, and progress metadata
+                will be written. Created if it does not exist.
+            num_batches : int, default=1
+                Number of batches to split `files` into. Each batch may be processed
+                independently; useful for coarse progress tracking or distributing work.
+            num_processes : int, default=1
+                Number of worker processes for parallel execution. Values >1 enable
+                multiprocessing; 1 forces serial execution (useful for debugging).
+            max_rss : int, default=8
+                Approximate total memory (in bytes) budget per worker. The value is
+                divided among active workers to derive a per‑process cap (enforced elsewhere
+                if applicable).
+            log_level : int, default=logging.WARNING
+                Logging verbosity level (e.g. logging.INFO, logging.DEBUG). Used to
+                configure this manager's logger.
+            continue_on_exception : bool, default=False
+                If True, failures in processing individual files are logged and skipped;
+                if False, the first exception aborts the run.
+            
+                
+            Side Effects
+            ------------
+            Creates (if absent) the following within `outdir`:
+            
+            - batches
+            - logs
+            - a copy of target file list
 
-        file_job: (path, process_params) -> DataFrame. See module doc.
-        process_params: Passed unchanged to each call.
-        files: Input file paths.
-        outdir: Output directory root.
-        num_batches / num_processes: Parallelism controls.
-        max_rss: Approx total memory budget (bytes); divided per worker.
-        continue_on_exception: Skip failed files instead of aborting.
+            Initializes or cleans a progress JSON file (progress-data.json).
         """
         self.file_job = file_job
         self.process_params = process_params
