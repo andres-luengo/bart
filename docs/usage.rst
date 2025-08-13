@@ -256,7 +256,8 @@ Performance Considerations
 
 **Memory Usage:**
 
-* Since the use of multiprocessing means you'll be reading in
+* Since using RunManager generally implies multiple .h5 files will open at the same time, memory usage can be significant.
+* Setting ``max_rss`` (or ``--max-rss-gb``) to a reasonable value can help in not wedging your data center. Note that this does make it so that if a process exceeds the memory limit, a memory error of some sort will be raised, which you may want to account for in your processing function.
 
 **Processing Speed:**
 
