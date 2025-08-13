@@ -6,8 +6,8 @@ This file provides an example implementation of a filter-based signal finding al
 for use with the RFI Pipeline framework. This is intended as a reference implementation
 to demonstrate how to create custom file processing functions that work with :class:`rfi_pipeline.RunManager`.
 
-When running this package as a script (i.e. ``python -m rfi-pipeline`` or ``rfi-pipeline``)
-it creates a :class:`rfi_pipeline.RunManager` with :attr:`FileJob.run_func` as the file_job.
+When running this package as a script (i.e. ``python -m rfi_pipeline`` or ``rfi-pipeline``)
+it creates a :class:`~rfi_pipeline.manager.RunManager` with :attr:`FileJob.run_func` as the file_job.
 
 Users are encouraged to create their own file processing functions based on their
 specific requirements and data analysis needs.
@@ -59,7 +59,7 @@ class FileJob:
         
     The key method is :meth:`run_func`, which provides the interface expected by RunManager.
     """
-    def __init__(self, file: PathLike, process_params: dict[str, Any]):
+    def __init__(self, process_params: dict[str, Any]):
         """
         Initialize a FileJob instance for processing HDF5 data files.
         This constructor opens the specified HDF5 file and extracts relevant metadata and datasets
@@ -127,6 +127,18 @@ class FileJob:
                 # other parameters...
             )
         """
+        self._max_freq = process_params['max_freq']
+        self._min_freq = process_params['min_freq']
+
+        self._frequency_window_size = process_params['freq_window']
+
+        self._warm_significance = process_params['warm_significance']
+        self._hot_significance = process_params['hot_significance']
+        self._hotter_significance = process_params['hotter_significance']
+
+        self._sigma_clip = process_params['sigma_clip']
+    
+    def _read_file_header(self, file: PathLike):
         file = Path(file)
 
         m = re.search(r'\/([^\/]+)$', str(file))
@@ -155,64 +167,40 @@ class FileJob:
         self._logger.debug(f'...with header {dict(self._data.attrs)}')
 
         self._min_channel = 0
-        if np.isfinite(process_params['max_freq']):
-            self._min_channel = round((process_params['max_freq'] - self._fch1) / self._foff)
+        if np.isfinite(self._max_freq):
+            self._min_channel = round((self._max_freq - self._fch1) / self._foff)
             self._min_channel = min(max(self._min_channel, 0), self._data.shape[2])
 
         self._max_channel = self._data.shape[2]
-        if np.isfinite(process_params['min_freq']):
-            self._max_channel = round((process_params['min_freq'] - self._fch1) / self._foff)
+        if np.isfinite(self._min_freq):
+            self._max_channel = round((self._min_freq - self._fch1) / self._foff)
             self._max_channel = max(min(self._max_channel, self._data.shape[2]), 0)
 
         self._logger.debug(f'Running on {self._max_channel - self._min_channel} channels, {(self._max_channel - self._min_channel) / self._data.shape[2]:.2%} of the data.')
-                
-        self._frequency_window_size = process_params['freq_window']
-
-        self._warm_significance = process_params['warm_significance']
-        self._hot_significance = process_params['hot_significance']
-        self._hotter_significance = process_params['hotter_significance']
-
-        self._sigma_clip = process_params['sigma_clip']
 
         self._num_even_frequency_blocks = int(np.ceil((self._max_channel - self._min_channel) / self._frequency_window_size))
         # overlapping blocks; last even block doesn't get an odd block
         self._num_frequency_blocks = self._num_even_frequency_blocks * 2 - 1
-    
-    def run(self):
+        
+
+    def run(self, file: PathLike) -> list[dict[str, Any]]:
         """
         Run an already initialized FileJob.
         """
+        self._read_file_header(file)
+
         start_time = time.perf_counter()
         
         filtered_block_l_indices = self._filter_blocks()
         hits = self._get_hits(filtered_block_l_indices)
-        df = pd.DataFrame(hits)
         
         end_time = time.perf_counter()
         self._logger.info(f'Finished file! Took {end_time - start_time:.3g}s')
-        return df
+        return hits
     
-    def __call__(self): 
+    def __call__(self, file: PathLike) -> list[dict[str, Any]]: 
         """Same as :meth:`run`."""
-        return self.run()
-
-    @classmethod
-    def run_func(cls, file: PathLike, process_params: dict[str, Any]) -> pd.DataFrame:
-        """
-        Executes a file job for the given file and processing parameters.
-        Pass this method into file_job in RunManager to run the example pipeline.
-
-        Args:
-            file (PathLike): The path to the file to be processed.
-            process_params (dict[str, Any]): A dictionary of parameters to control the processing.
-        Returns:
-            pd.DataFrame: The resulting DataFrame after processing the file.
-        """
-        
-        fj = cls(file, process_params)
-        result = fj()
-        del fj
-        return result
+        return self.run(file)
     
     def _filter_blocks(self) -> np.ndarray:
         """Returns the lower index for every block that passes the warm and hot index filters"""

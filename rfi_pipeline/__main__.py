@@ -188,7 +188,8 @@ def main():
     args = parse_args()
     make_outdir(args)
     files = get_file_names(args.infile)
-    manager = RunManager._from_namespace(FileJob.run_func, args, files)
+    file_job = FileJob(vars(args))
+    manager = RunManager._from_namespace(file_job, args, files)
     manager.run()
 
 if __name__ == '__main__': main()

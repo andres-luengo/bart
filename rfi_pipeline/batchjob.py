@@ -11,7 +11,7 @@ from pathlib import Path
 
 import logging
 
-from typing import Any, Callable, Sequence
+from typing import Any, Callable, Sequence, Iterable
 from threading import Lock
 
 import datetime as dt
@@ -21,14 +21,13 @@ import json
 MAX_PROGRESS_LIST_LENGTH = 64
 
 import os
-import time
 
 import hdf5plugin # dumb. h5py import doesn't work unless this import comes beforehand.
 import h5py
 
-from .example.filejob import FileJob
+from numpy import ndarray
 
-
+PandasData = ndarray | Iterable | dict | pd.DataFrame
 class BatchJob:
     """
     Processes a batch of files within a single worker process.
@@ -47,7 +46,7 @@ class BatchJob:
     """
     def __init__(
             self, *,
-            file_job: Callable[[os.PathLike, dict[str, Any]], pd.DataFrame],
+            file_job: Callable[[os.PathLike, dict[str, Any]], PandasData],
             process_params: dict[str, Any],
             outdir: Path, 
             batch: Sequence[Path], 
@@ -90,7 +89,8 @@ class BatchJob:
                 # Extract file header information
                 file_info = self._extract_file_info(file)
                 # df = FileJob(file, self.process_params).run()
-                df = self.file_job(file, self.process_params)
+                data = self.file_job(file, self.process_params)
+                df = pd.DataFrame(data)
             except Exception as e:
                 self._logger.error(f'Something went wrong on file {file}!', exc_info=True)
                 df = None

@@ -4,10 +4,11 @@ Run Manager Module
 
 Provides :class:`RunManager` to run a user ``file_job`` over files in parallel.
 
-``file_job`` contract (must implement):
+``file_job`` must meet the following requirements:
 
-* Signature: ``file_job(path, process_params) -> pandas.DataFrame``
-* One row per hit/result. Framework adds a ``source file`` column automatically.
+* Signature: ``file_job(path: PathLike) -> np.ndarray | Iterable | dict | pd.DataFrame``
+    * That is, ``file_job`` should take the path to be processed and return something that can be parsed by the :class:`pandas.DataFrame` constructor.
+* One item per hit/result. Framework will a ``source file`` column automatically.
 * Use ``logging`` (that is, don't write directly to stdout with something like ``print``) so output is captured from workers.
 
 Each returned DataFrame is appended to ``batches/batch_<NNN>.csv`` (header once).
@@ -32,27 +33,30 @@ import logging, logging.handlers
 
 import json
 
-from typing import Any, Callable, Sequence
+from typing import Any, Callable, Sequence, Iterable
 from os import PathLike
 
 import resource
 
 import datetime as dt
 
+from numpy import ndarray
 
+PandasData = ndarray | Iterable | dict | pd.DataFrame
+FileJobType = Callable[[PathLike,], PandasData]
 class RunManager:
     """Run a ``file_job`` over files in parallel batches.
 
     Summary:
 
-    * Partitions files into ``num_batches``.
+    * Partitions files into ``num_batches`` batches.
     * Spawns a pool of ``num_processes`` workers.
     * Streams each file's DataFrame output into a batch CSV (+ metadata files).
-    * Centralises logging; use ``logging`` not ``print``.
+    * Centralises logging done with :mod:`logging`; (don't write directly to stdout!).
     """
     def __init__(
             self,
-            file_job: Callable[[PathLike, dict[str, Any]], pd.DataFrame],
+            file_job: FileJobType,
             process_params: dict[str, Any],
             files: Sequence[PathLike],
             outdir: PathLike,
@@ -227,7 +231,7 @@ class RunManager:
             return set()
 
     @classmethod
-    def _from_namespace(cls, filejob: Callable[[PathLike, dict[str, Any]], pd.DataFrame], arg: Namespace, files: tuple[Path, ...]):
+    def _from_namespace(cls, filejob: FileJobType, arg: Namespace, files: tuple[Path, ...]):
         return cls(
             filejob,
             # process_params = {
