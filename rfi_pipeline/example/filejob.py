@@ -25,14 +25,14 @@ from pathlib import Path
 
 import logging
 
-from typing import Any, Callable
+from typing import Any
 from os import PathLike
 
 import time
 
 import re
 
-import warnings
+from contextlib import contextmanager
 
 from numba import njit
 logging.getLogger('numba').setLevel(logging.WARNING)
@@ -57,8 +57,7 @@ class FileJob:
         4. Apply hotter significance filtering (SNR-based with sigma clipping)
         5. Extract frequency and kurtosis features
         
-    For RunManager, prefer :meth:`with_params`, which returns a callable(file_path) configured
-    with your parameters. Use :meth:`run_func` for one-off processing of a single file.
+    The key method is :meth:`run_func`, which provides the interface expected by RunManager.
     """
     def __init__(self, process_params: dict[str, Any]):
         """
@@ -96,7 +95,8 @@ class FileJob:
 
         self._sigma_clip = process_params['sigma_clip']
     
-    def _read_file_header(self, file: PathLike):
+    @contextmanager
+    def _open_file(self, file: PathLike):
         file = Path(file)
 
         m = re.search(r'\/([^\/]+)$', str(file))
@@ -140,26 +140,24 @@ class FileJob:
         # overlapping blocks; last even block doesn't get an odd block
         self._num_frequency_blocks = self._num_even_frequency_blocks * 2 - 1
         
+        try:
+            yield
+        finally:
+            self._file.close()
 
     def run(self, file: PathLike) -> list[dict[str, Any]]:
         """
         Run an already initialized FileJob.
         """
-        self._read_file_header(file)
-        try:
-            start_time = time.perf_counter()
-            
+        start_time = time.perf_counter()
+        
+        with self._open_file(file):
             filtered_block_l_indices = self._filter_blocks()
             hits = self._get_hits(filtered_block_l_indices)
             
-            end_time = time.perf_counter()
-            self._logger.info(f'Finished file! Took {end_time - start_time:.3g}s')
-            return hits
-        finally:
-            try:
-                self.close()
-            except Exception:
-                pass
+        end_time = time.perf_counter()
+        self._logger.info(f'Finished file! Took {end_time - start_time:.3g}s')
+        return hits
     
     def __call__(self, file: PathLike) -> list[dict[str, Any]]: 
         """Same as :meth:`run`."""
@@ -422,42 +420,6 @@ class FileJob:
     def _index_to_frequency(self, index: int):
         return self._fch1 + index * self._foff
 
-    def close(self):
-        """Close the file handler used by this FileJob."""
-        self._file.close()
-
-    def __enter__(self): return self
-    def __exit__(self, exc_type, exc, tb):
-        try:
-            self._file.close()
-        except Exception:
-            pass
-
-    @staticmethod
-    def run_func(file: PathLike, process_params: dict[str, Any]) -> list[dict[str, Any]]:
-        """Convenience function to process a single file with given parameters.
-
-        Creates a temporary FileJob, runs it on the provided file, and ensures resources
-        are released.
-        """
-        job = FileJob(process_params)
-        try:
-            return job.run(file)
-        finally:
-            try:
-                job.close()
-            except Exception:
-                pass
-
-    @staticmethod
-    def with_params(process_params: dict[str, Any]) -> Callable[[PathLike], list[dict[str, Any]]]:
-        """Return a callable(file) suitable for RunManager that applies these params.
-
-        Each call constructs a fresh FileJob to avoid holding file handles across invocations.
-        """
-        def _fn(file: PathLike) -> list[dict[str, Any]]:
-            return FileJob.run_func(file, process_params)
-        return _fn
 
 @njit
 def _threshold_based_width_estimation(spectrum):
