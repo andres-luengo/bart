@@ -38,7 +38,6 @@ class BatchJob:
     
     Attributes:
         file_job: Function to process individual files
-        process_params: Parameters for file processing
         batch: List of files in this batch
         batch_num: Numeric identifier for this batch
         save_path: Path where batch results will be saved
@@ -46,8 +45,7 @@ class BatchJob:
     """
     def __init__(
             self, *,
-            file_job: Callable[[os.PathLike, dict[str, Any]], PandasData],
-            process_params: dict[str, Any],
+            file_job: Callable[[os.PathLike], PandasData],
             outdir: Path, 
             batch: Sequence[Path], 
             meta_lock: Lock,
@@ -56,8 +54,6 @@ class BatchJob:
     ):
         self.file_job = file_job
         self._logger = logging.getLogger(f'{__name__} (batch {batch_num:>03})')
-
-        self.process_params = process_params
 
         self.batch = batch
         self.batch_num = batch_num
@@ -89,7 +85,7 @@ class BatchJob:
                 # Extract file header information
                 file_info = self._extract_file_info(file)
                 # df = FileJob(file, self.process_params).run()
-                data = self.file_job(file, self.process_params)
+                data = self.file_job(file)
                 df = pd.DataFrame(data)
             except Exception as e:
                 self._logger.error(f'Something went wrong on file {file}!', exc_info=True)

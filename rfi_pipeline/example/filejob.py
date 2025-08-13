@@ -25,7 +25,7 @@ from pathlib import Path
 
 import logging
 
-from typing import Any
+from typing import Any, Callable
 from os import PathLike
 
 import time
@@ -57,75 +57,33 @@ class FileJob:
         4. Apply hotter significance filtering (SNR-based with sigma clipping)
         5. Extract frequency and kurtosis features
         
-    The key method is :meth:`run_func`, which provides the interface expected by RunManager.
+    For RunManager, prefer :meth:`with_params`, which returns a callable(file_path) configured
+    with your parameters. Use :meth:`run_func` for one-off processing of a single file.
     """
     def __init__(self, process_params: dict[str, Any]):
         """
-        Initialize a FileJob instance for processing HDF5 data files.
-        This constructor opens the specified HDF5 file and extracts relevant metadata and datasets
-        required for further processing. It also configures processing parameters such as frequency
-        windows and significance thresholds.
-            This method does not perform any data processing. For processing, use :meth:`run()`,
-            :meth:`run_func()`, or pass this object to :class:`rfi_pipeline.RunManager`.
-            The HDF5 file is opened during initialization. Ensure to close the file handler after use
-            by calling :meth:`close()`, using this object as a context manager, or using :meth:`run_func()`.
+        Initialize a FileJob with processing parameters.
+
+        This stores configuration such as frequency windows and significance thresholds.
+        Use run(file) to process individual HDF5 files.
+
         Parameters
         ----------
-        file : PathLike
-            Path to the HDF5 file to be processed.
         process_params : dict[str, Any]
             Dictionary of processing parameters. Keys include:
-                max_freq : float
-                    Maximum frequency for channel selection.
-                min_freq : float
-                    Minimum frequency for channel selection.
-                freq_window : int
-                    Size of the frequency window for block processing.
-                warm_significance : float
-                    Threshold for warm significance detection.
-                hot_significance : float
-                    Threshold for hot significance detection.
-                hotter_significance : float
-                    Threshold for hotter significance detection.
-                sigma_clip : float
-                    Sigma clipping value for data cleaning.
-        
-                    
-        .. note::
-            This method does not actually perform any processing.
-            If running file individually, make sure to call :meth:`run()` on 
-            object or :meth:`FileJob.run_func`
-            If passing into file_job parameter of 
-            :class:`rfi_pipeline.RunManager`, pass in run_func instead.
+            - max_freq (float): Maximum frequency for channel selection.
+            - min_freq (float): Minimum frequency for channel selection.
+            - freq_window (int): Size of the frequency window for block processing.
+            - warm_significance (float): Threshold for warm significance detection.
+            - hot_significance (float): Threshold for hot significance detection.
+            - hotter_significance (float): Threshold for hotter significance detection.
+            - sigma_clip (float): Sigma clipping value for data cleaning.
 
-        .. warning::
-            This method opens an h5py File. To make sure this file handler is 
-            closed properly after use, make sure to call :meth:`.close()`, 
-            use this object as a context manager or just use :meth:`run_func`.
-
-        Example
-        -------
-        .. code-block:: python
-
-            fj = FileJob('some_file.h5', {})
-            results = fj.run()
-            fj.close()
-            
-            # OR
-            
-            with FileJob('some_file.h5', {}) as fj:
-                results = fj.run()
-            
-            # OR
-
-            results = FileJob.run_func('some_file.h5', {})
-            
-            # OR (outputs to outdir, see Usage Guide)
-                
-            RunManager(
-                file_job=FileJob.run_func
-                # other parameters...
-            )
+        Notes
+        -----
+        This class opens the HDF5 file inside run(file) and does not keep it open between calls.
+        Prefer the convenience helpers FileJob.run_func(file, params) for one-offs or
+        FileJob.with_params(params) when using RunManager.
         """
         self._max_freq = process_params['max_freq']
         self._min_freq = process_params['min_freq']
@@ -188,15 +146,20 @@ class FileJob:
         Run an already initialized FileJob.
         """
         self._read_file_header(file)
-
-        start_time = time.perf_counter()
-        
-        filtered_block_l_indices = self._filter_blocks()
-        hits = self._get_hits(filtered_block_l_indices)
-        
-        end_time = time.perf_counter()
-        self._logger.info(f'Finished file! Took {end_time - start_time:.3g}s')
-        return hits
+        try:
+            start_time = time.perf_counter()
+            
+            filtered_block_l_indices = self._filter_blocks()
+            hits = self._get_hits(filtered_block_l_indices)
+            
+            end_time = time.perf_counter()
+            self._logger.info(f'Finished file! Took {end_time - start_time:.3g}s')
+            return hits
+        finally:
+            try:
+                self.close()
+            except Exception:
+                pass
     
     def __call__(self, file: PathLike) -> list[dict[str, Any]]: 
         """Same as :meth:`run`."""
@@ -464,7 +427,37 @@ class FileJob:
         self._file.close()
 
     def __enter__(self): return self
-    def __exit__(self): self._file.close()
+    def __exit__(self, exc_type, exc, tb):
+        try:
+            self._file.close()
+        except Exception:
+            pass
+
+    @staticmethod
+    def run_func(file: PathLike, process_params: dict[str, Any]) -> list[dict[str, Any]]:
+        """Convenience function to process a single file with given parameters.
+
+        Creates a temporary FileJob, runs it on the provided file, and ensures resources
+        are released.
+        """
+        job = FileJob(process_params)
+        try:
+            return job.run(file)
+        finally:
+            try:
+                job.close()
+            except Exception:
+                pass
+
+    @staticmethod
+    def with_params(process_params: dict[str, Any]) -> Callable[[PathLike], list[dict[str, Any]]]:
+        """Return a callable(file) suitable for RunManager that applies these params.
+
+        Each call constructs a fresh FileJob to avoid holding file handles across invocations.
+        """
+        def _fn(file: PathLike) -> list[dict[str, Any]]:
+            return FileJob.run_func(file, process_params)
+        return _fn
 
 @njit
 def _threshold_based_width_estimation(spectrum):

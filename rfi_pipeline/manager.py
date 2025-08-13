@@ -43,7 +43,7 @@ import datetime as dt
 from numpy import ndarray
 
 PandasData = ndarray | Iterable | dict | pd.DataFrame
-FileJobType = Callable[[PathLike,], PandasData]
+FileJobType = Callable[[PathLike], PandasData]
 class RunManager:
     """Run a ``file_job`` over files in parallel batches.
 
@@ -57,7 +57,6 @@ class RunManager:
     def __init__(
             self,
             file_job: FileJobType,
-            process_params: dict[str, Any],
             files: Sequence[PathLike],
             outdir: PathLike,
             num_batches: int = 1,
@@ -72,11 +71,9 @@ class RunManager:
             
             Parameters
             ----------
-            file_job : Callable[[os.PathLike, dict[str, Any]], pandas.DataFrame]
-                A callable invoked for each input file. It must accept (path, process_params)
-                and return a pandas DataFrame with that file's results.
-            process_params : dict[str, Any]
-                A dictionary of parameters passed unchanged to every invocation of `file_job`.
+            file_job : Callable[[os.PathLike], pandas.DataFrame]
+                A callable invoked for each input file. It must accept a single path argument
+                and return something convertible to a pandas DataFrame with that file's results.
             files : Sequence[os.PathLike]
                 Iterable of input file paths to process.
             outdir : os.PathLike
@@ -111,20 +108,19 @@ class RunManager:
             Initializes or cleans a progress JSON file (progress-data.json).
         """
         self.file_job = file_job
-        self.process_params = process_params
-        
+
         self.num_processes = num_processes
         self.batches = self._make_batches(files, num_batches)
-        
+
         self.outdir = Path(outdir)
-        self.outdir.mkdir(exist_ok=True)
+        self.outdir.mkdir(parents=True, exist_ok=True)
         (self.outdir / 'batches').mkdir(exist_ok=True)
         (self.outdir / 'logs').mkdir(exist_ok=True)
         self._save_targets_copy(files)
 
         self._logger = logging.getLogger(__name__)
         self._logging_setup(level=log_level)
-        
+
         self.max_rss = max_rss
         self.continue_on_exception = continue_on_exception
 
@@ -187,12 +183,12 @@ class RunManager:
         meta = {
             'start_time': dt.datetime.now(dt.timezone.utc).isoformat(),
             'outdir': str(self.outdir)
-        } | self.process_params
+        }
         try:
             with open(self.outdir / 'meta.json', 'w') as f:
                 json.dump(meta, f, indent=4)
         except TypeError as e:
-            raise TypeError('Keys and values in process_params must be json-serializable.') from e
+            raise TypeError('Could not serialize metadata to JSON.') from e
     
     def _setup_new_progress_file(self):
         progress_data = [
@@ -234,16 +230,6 @@ class RunManager:
     def _from_namespace(cls, filejob: FileJobType, arg: Namespace, files: tuple[Path, ...]):
         return cls(
             filejob,
-            # process_params = {
-            #     'freq_window': arg.frequency_block_size,
-            #     'warm_significance': arg.warm_significance,
-            #     'hot_significance': arg.hot_significance,
-            #     'hotter_significance': arg.hotter_significance,
-            #     'sigma_clip': arg.sigma_clip,
-            #     'min_freq': arg.min_freq,
-            #     'max_freq': arg.max_freq
-            # },
-            process_params=vars(arg),
             num_batches=arg.num_batches,
             num_processes=arg.num_processes,
             files=files,
@@ -286,7 +272,6 @@ class RunManager:
                     'file_job': self.file_job,
                     'batch': tuple(file for file in batch if file not in self._completed_files),
                     'batch_num': i,
-                    'process_params': self.process_params,
                     'outdir': self.outdir,
                     'meta_lock': meta_lock,
                     'continue_on_exception': self.continue_on_exception

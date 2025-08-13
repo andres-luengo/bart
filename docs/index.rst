@@ -15,9 +15,13 @@ Overview
 
 ``rfi_pipeline`` is a Python package for batching and parallelizing file processing tasks.
 
-The package is designed as a flexible framework where users can implement their own file processing functions. An example implementation is provided in the ``rfi_pipeline.example`` module to demonstrate how to create custom processors.
+The package is designed as a simplified framework where users can implement their own file processing functions. Features include:
 
-``rfi_pipeline.example`` implements a simple RFI finding algorithm, which can be executed from the command line with ``python -m rfi_pipeline`` or just ``rfi-pipeline``.
+* Simplified process-based parallelization.
+* Python :mod:`logging` compatibility to monitor processing.
+* Progress tracking (see :ref:`progress-monitoring`)
+
+``rfi_pipeline.example`` implements a simple algorithm for finding RFI in data from the Green Bank Telescope. This script can be executed from the command line with ``python -m rfi_pipeline`` or just ``rfi-pipeline``.
 
 Key Features
 ~~~~~~~~~~~~
@@ -51,13 +55,11 @@ Basic usage:
 
     from rfi_pipeline import RunManager
 
-    def some_processing(file_path, process_params):
+    def some_processing(file_path):
         """
         Define the processing you're interested in here. Could be an RFI
         survey, a SETI project, gathering statistics to train an ML model...
         """
-        # use logging to monitor how your work is going, RunManager will stop processes
-        # from writing on top of each other in the logs.
         logger = logging.getLogger('process_worker')
         logger.info(f'Reading in {file_path}')
 
@@ -73,20 +75,19 @@ Basic usage:
                 'std': np.std(f['data'][i])
             })
         logger.info(f'Done!')
-        return pd.DataFrame(results)
+        return results
     
     files = [
         '/datag/pipeline/AGBT24B_999_21/blc04_blp04/blc04_guppi_60652_09060_DYSON5_0039.rawspec.0000.h5'
         '/datag/pipeline/AGBT20A_999_30/blc70_blp30/blc70_guppi_58984_35843_TIC20182165_0095.rawspec.0000.h5'
     ]
     manager = RunManager(
-        file_job=my_file_processor,
-        process_params=process_params,
+        file_job=some_processing,
         files=files,
         outdir='./example-run'
     )
 
-For more detailed usage instructions, see the :doc:`usage` guide.
+For more detailed usage instructions, see the :doc:`usage`.
 
 Indices and tables
 ==================

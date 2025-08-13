@@ -107,16 +107,8 @@ Programmatic Processing
     # Set up logging
     logging.basicConfig(level=logging.INFO)
 
-    # Define processing parameters
-    process_params = {
-        'freq_window': 1024,
-        'warm_significance': 4.0,
-        'hot_significance': 8.0,
-        'hotter_significance': 7.0,
-        'sigma_clip': 3.0,
-        'min_freq': 1000.0,
-        'max_freq': 2000.0
-    }
+    # If your processor needs configuration, pre-bind with functools.partial
+    from functools import partial
 
     # Get list of files
     file_list = Path("file_list.txt")
@@ -125,8 +117,15 @@ Programmatic Processing
 
     # Create and run manager
     manager = RunManager(
-        file_job=FileJob.run_func,
-        process_params=process_params,
+        file_job=FileJob.with_params({
+            'freq_window': 1024,
+            'warm_significance': 4.0,
+            'hot_significance': 8.0,
+            'hotter_significance': 7.0,
+            'sigma_clip': 3.0,
+            'min_freq': 1000.0,
+            'max_freq': 2000.0
+        }),
         num_batches=50,
         num_processes=4,
         files=tuple(files),
@@ -184,7 +183,7 @@ Custom Analysis Pipeline
             self.output_dir = Path(output_dir)
             self.results = []
 
-        def process_batch(self, files, process_params):
+    def process_batch(self, files, process_params):
             """Process a batch of files with custom analysis."""
             batch_results = []
             

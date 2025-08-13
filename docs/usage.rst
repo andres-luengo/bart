@@ -45,6 +45,8 @@ The primary tool for running RFI detection::
 * ``-v, --verbose``: Increase verbosity (can be repeated)
 * ``-q, --quiet``: Decrease verbosity (can be repeated)
 
+.. _progress-monitoring:
+
 Progress Monitoring
 ~~~~~~~~~~~~~~~~~~~
 
@@ -124,7 +126,7 @@ Basic Usage
     from rfi_pipeline.example import FileJob
     from pathlib import Path
 
-    # Set up processing parameters
+    # Example processing parameters for the example FileJob
     process_params = {
         'freq_window': 1024,
         'warm_significance': 4.0,
@@ -139,8 +141,7 @@ Basic Usage
     # (you can also provide a custom file processing function)
     files = [Path("data1.h5"), Path("data2.h5")]
     manager = RunManager(
-        file_job=FileJob.run_func,
-        process_params=process_params,
+        file_job=FileJob.with_params(process_params),  # or functools.partial(my_processor, ...)
         num_batches=10,
         num_processes=4,
         files=tuple(files),
@@ -157,22 +158,25 @@ Custom File Processors
 The RFI Pipeline is designed to work with custom file processing functions.
 The built-in processor is provided as an example in ``rfi_pipeline.example.filejob``.
 You can create your own file processor by implementing a function that takes
-a file path and processing parameters and returns a pandas DataFrame:
+just a file path and returns data convertible to a pandas DataFrame. If you
+need global parameters, pre-bind them with functools.partial or a callable class:
 
 .. code-block:: python
 
     from rfi_pipeline.example.filejob import FileJob
     
     # Or create your own custom processor
-    def custom_file_processor(file_path, process_params):
+    from functools import partial
+
+    def custom_file_processor(file_path, *, threshold: float, window: int):
         logger = logging.getLogger('my_process_logger')
         logger.info(f'Starting processing for {file_path}')
         # Your custom processing logic here
         return pd.DataFrame([{'is_spliced': 'spliced' in str(file_path)}])
 
+    file_job = partial(custom_file_processor, threshold=4.2, window=1024)
     manager = RunManager(
-        file_job=my_file_processor,  # or FileJob.run_func
-        process_params=process_params,
+        file_job=file_job,  # or FileJob.run_func
         # ... other parameters
     )
 
@@ -250,7 +254,7 @@ Output Structure
 * ``batches/``: Individual CSV files for each processing batch
 * ``logs/``: Comprehensive and error-specific log files
 * ``files.csv``: List of processed files with metadata
-* ``meta.json``: Processing metadata and parameters
+* ``meta.json``: Processing metadata
 * ``progress-data.json``: Real-time progress tracking data
 * ``target-list.txt``: Copy of input file list
 
