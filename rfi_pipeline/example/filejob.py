@@ -3,10 +3,10 @@ Example File Job Module
 
 This file provides an example implementation of a filter-based signal finding algorithm
 for use with the RFI Pipeline framework. This is intended as a reference implementation
-to demonstrate how to create custom file processing functions that work with RunManager.
+to demonstrate how to create custom file processing functions that work with :class:`rfi_pipeline.RunManager`.
 
 When running this package as a script (i.e. ``python -m rfi-pipeline`` or ``rfi-pipeline``)
-it creates a run manager with `FileJob.run_func` as the default processor.
+it creates a :class:`rfi_pipeline.RunManager` with :attr:`FileJob.run_func` as the file_job.
 
 Users are encouraged to create their own file processing functions based on their
 specific requirements and data analysis needs.
@@ -56,20 +56,42 @@ class FileJob:
         4. Apply hotter significance filtering (SNR-based with sigma clipping)
         5. Extract frequency and kurtosis features
         
-    The key method is `run_func`, which provides the interface expected by RunManager.
+    The key method is :meth:`run_func`, which provides the interface expected by RunManager.
     """
     def __init__(self, file: PathLike, process_params: dict[str, Any]):
         """
         Initialize a FileJob.
 
         .. note::
-            This method does not actually perform any processing. If passing into :ref:`RunManager`,
+            This method does not actually perform any processing. If passing into :class:`rfi_pipeline.RunManager`,
             use run_func instead.
         
         .. warning::
-            This method opens an h5py File. To make sure this file handler is closed properly,
-            make sure to call :ref:`.close()`, create this object in a with block 
-            (as in `with FileJob('some path', {}):`) or just use :ref:`run_func`.
+            This method opens an h5py File. To make sure this file handler is 
+            closed properly after use, make sure to call :meth:`.close()`, 
+            use this object as a context manager or just use :meth:`run_func`.
+
+            .. code-block:: python
+
+                fj = FileJob('some_file.h5', {})
+                results = fj.run()
+                fj.close()
+                
+                # OR
+                
+                with FileJob('some_file.h5', {}) as fj:
+                    results = fj.run()
+                
+                # OR
+
+                results = FileJob.run_func('some_file.h5', {})
+                
+                # OR (outputs to outdir, see Usage Guide)
+                    
+                RunManager(
+                    file_job=FileJob.run_func
+                    # other parameters...
+                )
         """
         file = Path(file)
 
@@ -128,7 +150,7 @@ class FileJob:
     
     def run(self):
         """
-        Run an already-initialized FileJob.
+        Run an already initialized FileJob.
         """
         start_time = time.perf_counter()
         
@@ -140,7 +162,9 @@ class FileJob:
         self._logger.info(f'Finished file! Took {end_time - start_time:.3g}s')
         return df
     
-    def __call__(self): return self.run()
+    def __call__(self): 
+        """Same as :meth:`run`."""
+        return self.run()
 
     @classmethod
     def run_func(cls, file: PathLike, process_params: dict[str, Any]) -> pd.DataFrame:
