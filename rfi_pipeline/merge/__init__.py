@@ -13,26 +13,30 @@ import pandas as pd
 import json
 import logging
 
-
-def merge_rfi_run(rundir: Path, outdir: Optional[Path] = None, 
-                 format_type: str = 'csv', compress: bool = False,
-                 sort_by: str = 'frequency', force: bool = False,
-                 read_only: bool = False) -> Path:
+def merge_rfi_run(
+    rundir: Path,
+    outdir: Optional[Path] = None,
+    format_type: str = 'csv',
+    compress: bool = False,
+    sort_by: str = 'frequency',
+    force: bool = False,
+    read_only: bool = False
+) -> Path:
     """
     Merge batch CSV files from an RFI pipeline run into a single output file.
-    
+
     Args:
         rundir: Path to the RFI pipeline run directory (should contain batches/ subdirectory)
-        outdir: Output directory. If None, uses rundir (same directory as the run)
-        format_type: Output format ('csv', 'parquet', or 'hdf5')
-        compress: Whether to compress the output
-        sort_by: Column to sort by
-        force: Whether to overwrite existing files
-        read_only: If True, do not modify the original meta.json file (safe for active runs)
-        
+        outdir: Output directory. If None, uses rundir (same directory as the run). Default: None
+        format_type: Output format ('csv', 'parquet', or 'hdf5'). Default: 'csv'
+        compress: Whether to compress the output. Default: False
+        sort_by: Column to sort by. Default: 'frequency'
+        force: Whether to overwrite existing files. Default: False
+        read_only: If True, do not modify the original meta.json file (safe for active runs). Default: False
+
     Returns:
         Path to the merged output file
-        
+
     Raises:
         FileNotFoundError: If rundir or batch files are not found
         ValueError: If invalid format_type is specified
