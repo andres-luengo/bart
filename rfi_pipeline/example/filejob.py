@@ -1,5 +1,6 @@
 """
 Example File Job Module
+~~~~~~~~~~~~~~~~~~~~~~~
 
 This file provides an example implementation of a filter-based signal finding algorithm
 for use with the RFI Pipeline framework. This is intended as a reference implementation

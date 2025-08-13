@@ -1,8 +1,6 @@
 """
-RFI Pipeline Merge Module
-
-This module provides functionality to merge batch CSV files from an RFI pipeline run
-into a single consolidated output file.
+Output Merge Module
+~~~~~~~~~~~~~~~~~~~
 """
 
 __version__ = "0.2.0"
@@ -23,7 +21,7 @@ def merge_rfi_run(
     read_only: bool = False
 ) -> Path:
     """
-    Merge batch CSV files from an RFI pipeline run into a single output file.
+    Merge batch CSV files from an rfi_pipeline run into a single output file.
 
     Args:
         rundir: Path to the RFI pipeline run directory (should contain batches/ subdirectory)

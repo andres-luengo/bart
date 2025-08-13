@@ -1,5 +1,6 @@
 """
 Run Manager Module
+~~~~~~~~~~~~~~~~~~
 
 This module provides the RunManager class for coordinating parallel RFI detection
 across multiple files and batches.
