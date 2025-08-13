@@ -53,6 +53,7 @@ class RunManager:
             num_processes: int = 1,
             max_rss: int = 8,
             log_level: int = logging.WARNING,
+            continue_on_exception=False
     ):
         """
         Initialize the RunManager.
@@ -82,6 +83,7 @@ class RunManager:
         self._logging_setup(level=log_level)
         
         self.max_rss = max_rss
+        self.continue_on_exception = continue_on_exception
 
         self._setup_meta()
 
@@ -234,7 +236,8 @@ class RunManager:
                     'batch_num': i,
                     'process_params': self.process_params,
                     'outdir': self.outdir,
-                    'meta_lock': meta_lock
+                    'meta_lock': meta_lock,
+                    'continue_on_exception': self.continue_on_exception
                 }
                 for i, batch in enumerate(self.batches)
             )

@@ -53,6 +53,7 @@ class BatchJob:
             batch: Sequence[Path], 
             meta_lock: Lock,
             batch_num: int = -1,
+            continue_on_exception = False
     ):
         self.file_job = file_job
         self._logger = logging.getLogger(f'{__name__} (batch {batch_num:>03})')
@@ -67,6 +68,8 @@ class BatchJob:
 
         self._meta_lock = meta_lock
         self._progress_data_path = outdir / 'progress-data.json'
+
+        self._continue_on_exception = continue_on_exception
 
         with self.get_progress_data() as progress_data:
             batch_data = progress_data[self.batch_num]
@@ -88,9 +91,10 @@ class BatchJob:
                 file_info = self._extract_file_info(file)
                 # df = FileJob(file, self.process_params).run()
                 df = self.file_job(file, self.process_params)
-            except Exception:
+            except Exception as e:
                 self._logger.error(f'Something went wrong on file {file}!', exc_info=True)
                 df = None
+                if not self._continue_on_exception: raise e
             else:
                 df['source file'] = str(file)
                 df.to_csv(self.save_path, header=keep_header, mode='a', index=False)
