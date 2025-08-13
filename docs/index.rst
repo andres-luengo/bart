@@ -13,9 +13,11 @@ RFI Pipeline Documentation
 Overview
 --------
 
-The RFI Pipeline is a Python package for detecting and analyzing Radio Frequency Interference (RFI) in astronomical observation data. It provides efficient multi-processing capabilities for analyzing large volumes of astronomical data stored in HDF5 format.
+``rfi_pipeline`` is a Python package for batching and parallelizing file processing tasks.
 
 The package is designed as a flexible framework where users can implement their own file processing functions. An example implementation is provided in the ``rfi_pipeline.example`` module to demonstrate how to create custom processors.
+
+``rfi_pipeline.example`` implements a simple RFI finding algorithm, which can be executed from the command line with ``python -m rfi_pipeline`` or just ``rfi-pipeline``.
 
 Key Features
 ~~~~~~~~~~~~
