@@ -60,38 +60,71 @@ class FileJob:
     """
     def __init__(self, file: PathLike, process_params: dict[str, Any]):
         """
-        Initialize a FileJob.
-
-        .. note::
-            This method does not actually perform any processing. If passing into :class:`rfi_pipeline.RunManager`,
-            use run_func instead.
+        Initialize a FileJob instance for processing HDF5 data files.
+        This constructor opens the specified HDF5 file and extracts relevant metadata and datasets
+        required for further processing. It also configures processing parameters such as frequency
+        windows and significance thresholds.
+            This method does not perform any data processing. For processing, use :meth:`run()`,
+            :meth:`run_func()`, or pass this object to :class:`rfi_pipeline.RunManager`.
+            The HDF5 file is opened during initialization. Ensure to close the file handler after use
+            by calling :meth:`close()`, using this object as a context manager, or using :meth:`run_func()`.
+        Parameters
+        ----------
+        file : PathLike
+            Path to the HDF5 file to be processed.
+        process_params : dict[str, Any]
+            Dictionary of processing parameters. Keys include:
+                max_freq : float
+                    Maximum frequency for channel selection.
+                min_freq : float
+                    Minimum frequency for channel selection.
+                freq_window : int
+                    Size of the frequency window for block processing.
+                warm_significance : float
+                    Threshold for warm significance detection.
+                hot_significance : float
+                    Threshold for hot significance detection.
+                hotter_significance : float
+                    Threshold for hotter significance detection.
+                sigma_clip : float
+                    Sigma clipping value for data cleaning.
         
+                    
+        .. note::
+            This method does not actually perform any processing.
+            If running file individually, make sure to call :meth:`run()` on 
+            object or :meth:`FileJob.run_func`
+            If passing into file_job parameter of 
+            :class:`rfi_pipeline.RunManager`, pass in run_func instead.
+
         .. warning::
             This method opens an h5py File. To make sure this file handler is 
             closed properly after use, make sure to call :meth:`.close()`, 
             use this object as a context manager or just use :meth:`run_func`.
 
-            .. code-block:: python
+        Example
+        -------
+        .. code-block:: python
 
-                fj = FileJob('some_file.h5', {})
+            fj = FileJob('some_file.h5', {})
+            results = fj.run()
+            fj.close()
+            
+            # OR
+            
+            with FileJob('some_file.h5', {}) as fj:
                 results = fj.run()
-                fj.close()
-                
-                # OR
-                
-                with FileJob('some_file.h5', {}) as fj:
-                    results = fj.run()
-                
-                # OR
+            
+            # OR
 
-                results = FileJob.run_func('some_file.h5', {})
+            results = FileJob.run_func('some_file.h5', {})
+            
+            # OR (outputs to outdir, see Usage Guide)
                 
-                # OR (outputs to outdir, see Usage Guide)
-                    
-                RunManager(
-                    file_job=FileJob.run_func
-                    # other parameters...
-                )
+            RunManager(
+                file_job=FileJob.run_func
+                # other parameters...
+            )
         """
         file = Path(file)
 
