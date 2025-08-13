@@ -165,15 +165,18 @@ a file path and processing parameters and returns a pandas DataFrame:
     
     # Or create your own custom processor
     def custom_file_processor(file_path, process_params):
+        logger = logging.getLogger('my_process_logger')
+        logger.info(f'Starting processing for {file_path}')
         # Your custom processing logic here
-        # Must return a pandas DataFrame with the required columns
-        pass
-    
+        return pd.DataFrame([{'is_spliced': 'spliced' in str(file_path)}])
+
     manager = RunManager(
         file_job=my_file_processor,  # or FileJob.run_func
         process_params=process_params,
         # ... other parameters
     )
+
+See the documentation for :class:`~rfi_pipeline.RunManager` for details on how the processor should be defined.
 
 Merge API
 ~~~~~~~~~
@@ -258,12 +261,6 @@ Performance Considerations
 
 * Since using RunManager generally implies multiple .h5 files will open at the same time, memory usage can be significant.
 * Setting ``max_rss`` (or ``--max-rss-gb``) to a reasonable value can help in not wedging your data center. Note that this does make it so that if a process exceeds the memory limit, a memory error of some sort will be raised, which you may want to account for in your processing function.
-
-**Processing Speed:**
-
-* Processing time depends on data volume and RFI density
-* More processes generally improve performance but increase memory usage
-* Optimal number of processes depends on available CPU cores and memory
 
 **Batch Size:**
 

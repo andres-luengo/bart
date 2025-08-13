@@ -435,17 +435,6 @@ class FileJob:
                 'width': width,
                 'flags': '|'.join(flag.replace('|', '') for flag in flags)
             })
-
-        if not rows:
-            # when analysing data don't forget to drop these
-            rows.append({
-                'frequency_index': -1,
-                'frequency': np.nan,
-                'kurtosis': np.nan,
-                'snr': np.nan,
-                'width': np.nan,
-                'flags': 'EMPTY FILE'
-            })
         
         end_time = time.perf_counter()
         self._logger.debug(f'Done getting hits, took {end_time - start_time:.3g}s')

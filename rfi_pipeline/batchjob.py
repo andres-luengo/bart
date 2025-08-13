@@ -96,11 +96,12 @@ class BatchJob:
                 df = None
                 if not self._continue_on_exception: raise e
             else:
-                df['source file'] = str(file)
-                df.to_csv(self.save_path, header=keep_header, mode='a', index=False)
-                if keep_header:
-                    self._logger.info(f'Saved to {self.save_path}.')
-                    keep_header = False
+                if not df.empty:
+                    df['source file'] = str(file)
+                    df.to_csv(self.save_path, header=keep_header, mode='a', index=False)
+                    if keep_header:
+                        self._logger.info(f'Saved to {self.save_path}.')
+                        keep_header = False
 
             # Update files.csv with file information
             self._update_files_csv(file, df, file_info)
@@ -131,11 +132,11 @@ class BatchJob:
             if 'hit counts' not in batch_progress: 
                 batch_progress['hit counts'] = []
             hit_counts: list[int] = batch_progress['hit counts']
-            if df is None: # something went wrong
+            if df is None:  # error
                 hit_counts.append(-1)
-            elif df.iloc[0]['flags'] == 'EMPTY FILE':
+            elif df.empty:  # no results
                 hit_counts.append(0)
-            else:
+            else:  # normal results
                 hit_counts.append(len(df))
             if len(hit_counts) > MAX_PROGRESS_LIST_LENGTH:
                 hit_counts.pop(0)
@@ -197,10 +198,7 @@ class BatchJob:
         # Determine number of hits
         num_hits = -1  # Default for failed processing
         if df is not None:
-            if len(df) == 1 and df.iloc[0]['flags'] == 'EMPTY FILE':
-                num_hits = 0
-            else:
-                num_hits = len(df)
+            num_hits = 0 if df.empty else len(df)
         
         # Get current time in ISO format (UTC timezone)
         iso_time_completed = dt.datetime.now(dt.timezone.utc).isoformat()

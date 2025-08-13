@@ -2,8 +2,25 @@
 Run Manager Module
 ~~~~~~~~~~~~~~~~~~
 
-This module provides the RunManager class for coordinating parallel RFI detection
-across multiple files and batches.
+Provides :class:`RunManager` to run a user ``file_job`` over files in parallel.
+
+``file_job`` contract (must implement):
+* Signature: ``file_job(path, process_params) -> pandas.DataFrame``
+* One row per hit/result. Framework adds a ``source file`` column automatically.
+* Use ``logging`` (not ``print``) so output is captured from workers.
+
+Aggregation:
+* Each returned DataFrame is appended to ``batches/batch_<NNN>.csv`` (header once).
+* Per‑file stats go to ``files.csv``; progress + timing go to ``progress-data.json``.
+* No cross‑file accumulation in RAM; row order across batches is not guaranteed.
+
+Errors:
+* Exceptions are logged; if ``continue_on_exception`` is False the run stops, else
+    the file is marked failed (``num_hits = -1``) and processing continues.
+
+Memory:
+* A per‑process limit (derived from ``max_rss``) is set; keep per‑file DataFrames
+    modest in size.
 """
 
 import pandas as pd
@@ -28,44 +45,35 @@ import datetime as dt
 
 
 class RunManager:
-    """
-    Manages the execution of RFI detection across multiple files and processes.
-    
-    The RunManager coordinates parallel processing by dividing input files into
-    batches and distributing them across multiple worker processes. It handles
-    resource management, progress tracking, and result consolidation.
-    
-    Attributes:
-        file_job: Function to process individual files
-        process_params: Parameters for the file processing function
-        num_processes: Number of parallel worker processes
-        batches: List of file batches for processing
-        outdir: Output directory for results
-        max_rss: Maximum memory usage in bytes
+    """Run a ``file_job`` over files in parallel batches.
+
+    Summary:
+    * Partitions files into ``num_batches``.
+    * Spawns a pool of ``num_processes`` workers.
+    * Streams each file's DataFrame output into a batch CSV (+ metadata files).
+    * Centralises logging; use ``logging`` not ``print``.
     """
     def __init__(
             self,
             file_job: Callable[[PathLike, dict[str, Any]], pd.DataFrame],
-            process_params: dict[str, Any], 
+            process_params: dict[str, Any],
             files: Sequence[PathLike],
             outdir: PathLike,
-            num_batches: int = 1, 
+            num_batches: int = 1,
             num_processes: int = 1,
             max_rss: int = 8,
             log_level: int = logging.WARNING,
-            continue_on_exception=False
+            continue_on_exception: bool = False
     ):
-        """
-        Initialize the RunManager.
-        
-        Args:
-            file_job: Function to process individual files, should return DataFrame
-            process_params: Dictionary of parameters for the file processing function
-            num_batches: Number of batches to divide files into
-            num_processes: Number of parallel worker processes
-            files: Sequence of file paths to process
-            outdir: Output directory for results and metadata
-            max_rss: Maximum memory usage in bytes
+        """Init.
+
+        file_job: (path, process_params) -> DataFrame. See module doc.
+        process_params: Passed unchanged to each call.
+        files: Input file paths.
+        outdir: Output directory root.
+        num_batches / num_processes: Parallelism controls.
+        max_rss: Approx total memory budget (bytes); divided per worker.
+        continue_on_exception: Skip failed files instead of aborting.
         """
         self.file_job = file_job
         self.process_params = process_params
@@ -172,11 +180,20 @@ class RunManager:
             json.dump(data, f)
     
     def _get_completed_files(self):
-        completed_files: list[Path] = []
-        for batch_csv_path in (self.outdir / 'batches').iterdir():
-            df = pd.read_csv(batch_csv_path, usecols=['source file'])
-            completed_files += list(map(Path, df['source file'].unique()))
-        return set(completed_files)
+        """
+        A file counts as completed iff it appears in ``files.csv`` with
+        ``num_hits >= 0`` (zero‑hit or had results). Rows with ``num_hits == -1``
+        (failure) are ignored so the file can be retried.
+        """
+        files_csv = self.outdir / 'files.csv'
+        if not files_csv.is_file():
+            return set()
+        try:
+            fdf = pd.read_csv(files_csv, usecols=['file', 'num_hits'])
+            mask = fdf['num_hits'] >= 0
+            return {Path(p) for p in fdf.loc[mask, 'file'].unique()}
+        except Exception:
+            return set()
 
     @classmethod
     def _from_namespace(cls, filejob: Callable[[PathLike, dict[str, Any]], pd.DataFrame], arg: Namespace, files: tuple[Path, ...]):
