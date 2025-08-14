@@ -50,12 +50,12 @@ pip install -e ".[dev]"
 ### Command Line Interface
 
 ```bash
-rfi-finder input_files.txt output_directory [options]
+rfi-pipeline input_files.txt output_directory [options]
 ```
 
 #### Basic Example
 ```bash
-rfi-finder file_list.txt /path/to/output --num-processes 4 --max-rss-gb 64
+rfi-pipeline file_list.txt /path/to/output --num-processes 4 --max-rss-gb 64
 ```
 
 #### Parameters
@@ -90,18 +90,21 @@ from rfi_pipeline import RunManager
 from rfi_pipeline.example.filejob import FileJob
 from pathlib import Path
 
-# Set up processing parameters
 process_params = {
     'freq_window': 1024,
-    'warm_significance': 5.0,
-    'hot_significance': 10.0
+    'warm_significance': 4.0,
+    'hot_significance': 8.0,
+    'hotter_significance': 7.0,
+    'sigma_clip': 3.0,
+    'min_freq': float('-inf'),
+    'max_freq': float('inf'),
 }
 
+job = FileJob(process_params)
 # Initialize manager with the example file processor
 files = [Path("data1.h5"), Path("data2.h5")]
 manager = RunManager(
-    file_job=FileJob.run_func,  # Use the example processor
-    process_params=process_params,
+    file_job=job,
     num_batches=10,
     num_processes=4,
     files=tuple(files),
@@ -115,15 +118,15 @@ manager.run()
 You can also create your own custom file processing function that follows the same interface:
 
 ```python
-def my_custom_processor(file_path, process_params):
+from functools import partial
+
+def my_custom_processor(file_path, *, threshold: float):
     # Your custom processing logic here
     # Must return a pandas DataFrame with detection results
     pass
 
-manager = RunManager(
-    file_job=my_custom_processor,
-    # ... other parameters
-)
+job = partial(my_custom_processor, threshold=4.2)
+manager = RunManager(file_job=job, files=tuple(files), outdir=Path("output"))
 ```
 
 ### Progress Monitoring

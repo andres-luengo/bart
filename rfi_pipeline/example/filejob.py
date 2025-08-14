@@ -6,8 +6,8 @@ This file provides an example implementation of a filter-based signal finding al
 for use with the RFI Pipeline framework. This is intended as a reference implementation
 to demonstrate how to create custom file processing functions that work with :class:`rfi_pipeline.RunManager`.
 
-When running this package as a script (i.e. ``python -m rfi-pipeline`` or ``rfi-pipeline``)
-it creates a :class:`rfi_pipeline.RunManager` with :attr:`FileJob.run_func` as the file_job.
+When running this package as a script (i.e. ``python -m rfi_pipeline`` or ``rfi-pipeline``)
+it creates a :class:`~rfi_pipeline.manager.RunManager` with an instance of :class:`FileJob` as the file_job.
 
 Users are encouraged to create their own file processing functions based on their
 specific requirements and data analysis needs.
@@ -32,7 +32,7 @@ import time
 
 import re
 
-import warnings
+from contextlib import contextmanager
 
 from numba import njit
 logging.getLogger('numba').setLevel(logging.WARNING)
@@ -57,76 +57,46 @@ class FileJob:
         4. Apply hotter significance filtering (SNR-based with sigma clipping)
         5. Extract frequency and kurtosis features
         
-    The key method is :meth:`run_func`, which provides the interface expected by RunManager.
+    Usage:
+
+        job = FileJob(process_params)
+        hits = job.run(path)  # or: hits = job(path)
+
+    The instance is a callable that accepts a file path and returns rows convertible
+    to a pandas DataFrame, which matches the interface expected by RunManager.
     """
-    def __init__(self, file: PathLike, process_params: dict[str, Any]):
+    def __init__(self, process_params: dict[str, Any]):
         """
-        Initialize a FileJob instance for processing HDF5 data files.
-        This constructor opens the specified HDF5 file and extracts relevant metadata and datasets
-        required for further processing. It also configures processing parameters such as frequency
-        windows and significance thresholds.
-            This method does not perform any data processing. For processing, use :meth:`run()`,
-            :meth:`run_func()`, or pass this object to :class:`rfi_pipeline.RunManager`.
-            The HDF5 file is opened during initialization. Ensure to close the file handler after use
-            by calling :meth:`close()`, using this object as a context manager, or using :meth:`run_func()`.
+        Initialize a FileJob with processing parameters.
+
+        This stores configuration such as frequency windows and significance thresholds.
+        Use run(file) to process individual HDF5 files.
+
         Parameters
         ----------
-        file : PathLike
-            Path to the HDF5 file to be processed.
         process_params : dict[str, Any]
             Dictionary of processing parameters. Keys include:
-                max_freq : float
-                    Maximum frequency for channel selection.
-                min_freq : float
-                    Minimum frequency for channel selection.
-                freq_window : int
-                    Size of the frequency window for block processing.
-                warm_significance : float
-                    Threshold for warm significance detection.
-                hot_significance : float
-                    Threshold for hot significance detection.
-                hotter_significance : float
-                    Threshold for hotter significance detection.
-                sigma_clip : float
-                    Sigma clipping value for data cleaning.
-        
-                    
-        .. note::
-            This method does not actually perform any processing.
-            If running file individually, make sure to call :meth:`run()` on 
-            object or :meth:`FileJob.run_func`
-            If passing into file_job parameter of 
-            :class:`rfi_pipeline.RunManager`, pass in run_func instead.
-
-        .. warning::
-            This method opens an h5py File. To make sure this file handler is 
-            closed properly after use, make sure to call :meth:`.close()`, 
-            use this object as a context manager or just use :meth:`run_func`.
-
-        Example
-        -------
-        .. code-block:: python
-
-            fj = FileJob('some_file.h5', {})
-            results = fj.run()
-            fj.close()
-            
-            # OR
-            
-            with FileJob('some_file.h5', {}) as fj:
-                results = fj.run()
-            
-            # OR
-
-            results = FileJob.run_func('some_file.h5', {})
-            
-            # OR (outputs to outdir, see Usage Guide)
-                
-            RunManager(
-                file_job=FileJob.run_func
-                # other parameters...
-            )
+            - max_freq (float): Maximum frequency for channel selection.
+            - min_freq (float): Minimum frequency for channel selection.
+            - freq_window (int): Size of the frequency window for block processing.
+            - warm_significance (float): Threshold for warm significance detection.
+            - hot_significance (float): Threshold for hot significance detection.
+            - hotter_significance (float): Threshold for hotter significance detection.
+            - sigma_clip (float): Sigma clipping value for data cleaning.
         """
+        self._max_freq = process_params['max_freq']
+        self._min_freq = process_params['min_freq']
+
+        self._frequency_window_size = process_params['freq_window']
+
+        self._warm_significance = process_params['warm_significance']
+        self._hot_significance = process_params['hot_significance']
+        self._hotter_significance = process_params['hotter_significance']
+
+        self._sigma_clip = process_params['sigma_clip']
+    
+    @contextmanager
+    def _open_file(self, file: PathLike):
         file = Path(file)
 
         m = re.search(r'\/([^\/]+)$', str(file))
@@ -155,64 +125,43 @@ class FileJob:
         self._logger.debug(f'...with header {dict(self._data.attrs)}')
 
         self._min_channel = 0
-        if np.isfinite(process_params['max_freq']):
-            self._min_channel = round((process_params['max_freq'] - self._fch1) / self._foff)
+        if np.isfinite(self._max_freq):
+            self._min_channel = round((self._max_freq - self._fch1) / self._foff)
             self._min_channel = min(max(self._min_channel, 0), self._data.shape[2])
 
         self._max_channel = self._data.shape[2]
-        if np.isfinite(process_params['min_freq']):
-            self._max_channel = round((process_params['min_freq'] - self._fch1) / self._foff)
+        if np.isfinite(self._min_freq):
+            self._max_channel = round((self._min_freq - self._fch1) / self._foff)
             self._max_channel = max(min(self._max_channel, self._data.shape[2]), 0)
 
         self._logger.debug(f'Running on {self._max_channel - self._min_channel} channels, {(self._max_channel - self._min_channel) / self._data.shape[2]:.2%} of the data.')
-                
-        self._frequency_window_size = process_params['freq_window']
-
-        self._warm_significance = process_params['warm_significance']
-        self._hot_significance = process_params['hot_significance']
-        self._hotter_significance = process_params['hotter_significance']
-
-        self._sigma_clip = process_params['sigma_clip']
 
         self._num_even_frequency_blocks = int(np.ceil((self._max_channel - self._min_channel) / self._frequency_window_size))
         # overlapping blocks; last even block doesn't get an odd block
         self._num_frequency_blocks = self._num_even_frequency_blocks * 2 - 1
-    
-    def run(self):
+        
+        try:
+            yield
+        finally:
+            self._file.close()
+
+    def run(self, file: PathLike) -> list[dict[str, Any]]:
         """
         Run an already initialized FileJob.
         """
         start_time = time.perf_counter()
         
-        filtered_block_l_indices = self._filter_blocks()
-        hits = self._get_hits(filtered_block_l_indices)
-        df = pd.DataFrame(hits)
-        
+        with self._open_file(file):
+            filtered_block_l_indices = self._filter_blocks()
+            hits = self._get_hits(filtered_block_l_indices)
+            
         end_time = time.perf_counter()
         self._logger.info(f'Finished file! Took {end_time - start_time:.3g}s')
-        return df
+        return hits
     
-    def __call__(self): 
+    def __call__(self, file: PathLike) -> list[dict[str, Any]]: 
         """Same as :meth:`run`."""
-        return self.run()
-
-    @classmethod
-    def run_func(cls, file: PathLike, process_params: dict[str, Any]) -> pd.DataFrame:
-        """
-        Executes a file job for the given file and processing parameters.
-        Pass this method into file_job in RunManager to run the example pipeline.
-
-        Args:
-            file (PathLike): The path to the file to be processed.
-            process_params (dict[str, Any]): A dictionary of parameters to control the processing.
-        Returns:
-            pd.DataFrame: The resulting DataFrame after processing the file.
-        """
-        
-        fj = cls(file, process_params)
-        result = fj()
-        del fj
-        return result
+        return self.run(file)
     
     def _filter_blocks(self) -> np.ndarray:
         """Returns the lower index for every block that passes the warm and hot index filters"""
@@ -471,12 +420,6 @@ class FileJob:
     def _index_to_frequency(self, index: int):
         return self._fch1 + index * self._foff
 
-    def close(self):
-        """Close the file handler used by this FileJob."""
-        self._file.close()
-
-    def __enter__(self): return self
-    def __exit__(self): self._file.close()
 
 @njit
 def _threshold_based_width_estimation(spectrum):

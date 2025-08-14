@@ -4,10 +4,11 @@ Run Manager Module
 
 Provides :class:`RunManager` to run a user ``file_job`` over files in parallel.
 
-``file_job`` contract (must implement):
+``file_job`` must meet the following requirements:
 
-* Signature: ``file_job(path, process_params) -> pandas.DataFrame``
-* One row per hit/result. Framework adds a ``source file`` column automatically.
+* Signature: ``file_job(path: PathLike) -> np.ndarray | Iterable | dict | pd.DataFrame``
+    * That is, ``file_job`` should take the path to be processed and return something that can be parsed by the :class:`pandas.DataFrame` constructor.
+* One item per hit/result. Framework will a ``source file`` column automatically.
 * Use ``logging`` (that is, don't write directly to stdout with something like ``print``) so output is captured from workers.
 
 Each returned DataFrame is appended to ``batches/batch_<NNN>.csv`` (header once).
@@ -32,28 +33,30 @@ import logging, logging.handlers
 
 import json
 
-from typing import Any, Callable, Sequence
+from typing import Any, Callable, Sequence, Iterable
 from os import PathLike
 
 import resource
 
 import datetime as dt
 
+from numpy import ndarray
 
+PandasData = ndarray | Iterable | dict | pd.DataFrame
+FileJobType = Callable[[PathLike], PandasData]
 class RunManager:
     """Run a ``file_job`` over files in parallel batches.
 
     Summary:
 
-    * Partitions files into ``num_batches``.
+    * Partitions files into ``num_batches`` batches.
     * Spawns a pool of ``num_processes`` workers.
     * Streams each file's DataFrame output into a batch CSV (+ metadata files).
-    * Centralises logging; use ``logging`` not ``print``.
+    * Centralises logging done with :mod:`logging`; (don't write directly to stdout!).
     """
     def __init__(
             self,
-            file_job: Callable[[PathLike, dict[str, Any]], pd.DataFrame],
-            process_params: dict[str, Any],
+            file_job: FileJobType,
             files: Sequence[PathLike],
             outdir: PathLike,
             num_batches: int = 1,
@@ -68,11 +71,9 @@ class RunManager:
             
             Parameters
             ----------
-            file_job : Callable[[os.PathLike, dict[str, Any]], pandas.DataFrame]
-                A callable invoked for each input file. It must accept (path, process_params)
-                and return a pandas DataFrame with that file's results.
-            process_params : dict[str, Any]
-                A dictionary of parameters passed unchanged to every invocation of `file_job`.
+            file_job : Callable[[os.PathLike], pandas.DataFrame]
+                A callable invoked for each input file. It must accept a single path argument
+                and return something convertible to a pandas DataFrame with that file's results.
             files : Sequence[os.PathLike]
                 Iterable of input file paths to process.
             outdir : os.PathLike
@@ -107,20 +108,19 @@ class RunManager:
             Initializes or cleans a progress JSON file (progress-data.json).
         """
         self.file_job = file_job
-        self.process_params = process_params
-        
+
         self.num_processes = num_processes
         self.batches = self._make_batches(files, num_batches)
-        
+
         self.outdir = Path(outdir)
-        self.outdir.mkdir(exist_ok=True)
+        self.outdir.mkdir(parents=True, exist_ok=True)
         (self.outdir / 'batches').mkdir(exist_ok=True)
         (self.outdir / 'logs').mkdir(exist_ok=True)
         self._save_targets_copy(files)
 
         self._logger = logging.getLogger(__name__)
         self._logging_setup(level=log_level)
-        
+
         self.max_rss = max_rss
         self.continue_on_exception = continue_on_exception
 
@@ -183,12 +183,12 @@ class RunManager:
         meta = {
             'start_time': dt.datetime.now(dt.timezone.utc).isoformat(),
             'outdir': str(self.outdir)
-        } | self.process_params
+        }
         try:
             with open(self.outdir / 'meta.json', 'w') as f:
                 json.dump(meta, f, indent=4)
         except TypeError as e:
-            raise TypeError('Keys and values in process_params must be json-serializable.') from e
+            raise TypeError('Could not serialize metadata to JSON.') from e
     
     def _setup_new_progress_file(self):
         progress_data = [
@@ -227,19 +227,9 @@ class RunManager:
             return set()
 
     @classmethod
-    def _from_namespace(cls, filejob: Callable[[PathLike, dict[str, Any]], pd.DataFrame], arg: Namespace, files: tuple[Path, ...]):
+    def _from_namespace(cls, filejob: FileJobType, arg: Namespace, files: tuple[Path, ...]):
         return cls(
             filejob,
-            # process_params = {
-            #     'freq_window': arg.frequency_block_size,
-            #     'warm_significance': arg.warm_significance,
-            #     'hot_significance': arg.hot_significance,
-            #     'hotter_significance': arg.hotter_significance,
-            #     'sigma_clip': arg.sigma_clip,
-            #     'min_freq': arg.min_freq,
-            #     'max_freq': arg.max_freq
-            # },
-            process_params=vars(arg),
             num_batches=arg.num_batches,
             num_processes=arg.num_processes,
             files=files,
@@ -282,7 +272,6 @@ class RunManager:
                     'file_job': self.file_job,
                     'batch': tuple(file for file in batch if file not in self._completed_files),
                     'batch_num': i,
-                    'process_params': self.process_params,
                     'outdir': self.outdir,
                     'meta_lock': meta_lock,
                     'continue_on_exception': self.continue_on_exception

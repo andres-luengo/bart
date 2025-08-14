@@ -11,7 +11,7 @@ from pathlib import Path
 
 import logging
 
-from typing import Any, Callable, Sequence
+from typing import Any, Callable, Sequence, Iterable
 from threading import Lock
 
 import datetime as dt
@@ -21,14 +21,13 @@ import json
 MAX_PROGRESS_LIST_LENGTH = 64
 
 import os
-import time
 
 import hdf5plugin # dumb. h5py import doesn't work unless this import comes beforehand.
 import h5py
 
-from .example.filejob import FileJob
+from numpy import ndarray
 
-
+PandasData = ndarray | Iterable | dict | pd.DataFrame
 class BatchJob:
     """
     Processes a batch of files within a single worker process.
@@ -39,7 +38,6 @@ class BatchJob:
     
     Attributes:
         file_job: Function to process individual files
-        process_params: Parameters for file processing
         batch: List of files in this batch
         batch_num: Numeric identifier for this batch
         save_path: Path where batch results will be saved
@@ -47,8 +45,7 @@ class BatchJob:
     """
     def __init__(
             self, *,
-            file_job: Callable[[os.PathLike, dict[str, Any]], pd.DataFrame],
-            process_params: dict[str, Any],
+            file_job: Callable[[os.PathLike], PandasData],
             outdir: Path, 
             batch: Sequence[Path], 
             meta_lock: Lock,
@@ -57,8 +54,6 @@ class BatchJob:
     ):
         self.file_job = file_job
         self._logger = logging.getLogger(f'{__name__} (batch {batch_num:>03})')
-
-        self.process_params = process_params
 
         self.batch = batch
         self.batch_num = batch_num
@@ -89,8 +84,8 @@ class BatchJob:
             try:
                 # Extract file header information
                 file_info = self._extract_file_info(file)
-                # df = FileJob(file, self.process_params).run()
-                df = self.file_job(file, self.process_params)
+                data = self.file_job(file)
+                df = pd.DataFrame(data)
             except Exception as e:
                 self._logger.error(f'Something went wrong on file {file}!', exc_info=True)
                 df = None

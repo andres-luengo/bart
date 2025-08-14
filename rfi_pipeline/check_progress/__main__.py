@@ -151,7 +151,7 @@ def format_progress_data(data: list[dict[str, Any]]) -> str:
     now = dt.datetime.now(dt.timezone.utc)
 
     for batch_idx, active_file in df[~df['worker pid'].isna()].iterrows():
-        output.write(f'PID {int(active_file['worker pid'])}\n')
+        output.write(f"PID {int(active_file['worker pid'])}\n")
         output.write(f'batch {batch_idx}\n')
         
         num_complete = int(active_file['num complete'])

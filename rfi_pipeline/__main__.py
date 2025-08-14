@@ -2,7 +2,6 @@ import argparse
 from pathlib import Path
 
 from .manager import RunManager
-from .example.filejob import FileJob
 
 import logging, logging.handlers
 import shutil
@@ -188,7 +187,21 @@ def main():
     args = parse_args()
     make_outdir(args)
     files = get_file_names(args.infile)
-    manager = RunManager._from_namespace(FileJob.run_func, args, files)
+    # Map CLI args to FileJob processing params
+    # Lazy import to avoid requiring heavy deps just to view --help
+    from .example.filejob import FileJob
+    process_params = {
+        'freq_window': args.frequency_block_size,
+        'warm_significance': args.warm_significance,
+        'hot_significance': args.hot_significance,
+        'hotter_significance': args.hotter_significance,
+        'sigma_clip': args.sigma_clip,
+        'min_freq': args.min_freq,
+        'max_freq': args.max_freq,
+    }
+    # Initialize a callable FileJob instance with global parameters
+    file_job = FileJob(process_params)
+    manager = RunManager._from_namespace(file_job, args, files)
     manager.run()
 
 if __name__ == '__main__': main()
