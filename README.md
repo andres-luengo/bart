@@ -1,4 +1,4 @@
-# RFI Pipeline
+# BART
 
 A Python package for detecting and analyzing Radio Frequency Interference (RFI) in astronomical observation data.
 
@@ -15,7 +15,7 @@ make html
 
 ## Description
 
-The RFI Pipeline is designed to process large volumes of astronomical data stored in HDF5 format, identifying potential radio frequency interference through statistical analysis. The pipeline uses multi-processing capabilities to efficiently handle large datasets and provides detailed logging for monitoring the analysis process.
+BART is designed to process large volumes of astronomical data stored in HDF5 format, identifying potential radio frequency interference through statistical analysis. The pipeline uses multi-processing capabilities to efficiently handle large datasets and provides detailed logging for monitoring the analysis process.
 
 ## Features
 
@@ -30,11 +30,12 @@ The RFI Pipeline is designed to process large volumes of astronomical data store
 
 ### From PyPI (when published)
 ```bash
-pip install rfi-pipeline
+pip install bart
 ```
 
 ### Development Installation
 ```bash
+# Clone the repository (repo slug may still be rfi-pipeline)
 git clone https://github.com/breakthrough-listen/rfi-pipeline.git
 cd rfi-pipeline
 pip install -e .
@@ -50,12 +51,12 @@ pip install -e ".[dev]"
 ### Command Line Interface
 
 ```bash
-rfi-pipeline input_files.txt output_directory [options]
+bart-rfi input_files.txt output_directory [options]
 ```
 
 #### Basic Example
 ```bash
-rfi-pipeline file_list.txt /path/to/output --num-processes 4 --max-rss-gb 64
+bart-rfi file_list.txt /path/to/output --num-processes 4 --max-rss-gb 64
 ```
 
 #### Parameters
@@ -81,13 +82,13 @@ rfi-pipeline file_list.txt /path/to/output --num-processes 4 --max-rss-gb 64
 
 ### Python API
 
-The RFI Pipeline provides a flexible framework for parallel processing of astronomical data files. 
+BART provides a flexible framework for parallel processing of astronomical data files. 
 The main entry point is the `RunManager` class, which can work with custom file processing functions.
-An example implementation is provided in `rfi_pipeline.example.filejob`.
+An example implementation is provided in `bart.example.filejob`.
 
 ```python
-from rfi_pipeline import RunManager
-from rfi_pipeline.example.filejob import FileJob
+from bart import RunManager
+from bart.example.filejob import FileJob
 from pathlib import Path
 
 process_params = {
@@ -135,22 +136,22 @@ Monitor the progress of a running RFI pipeline in real-time:
 
 #### Command Line Interface
 ```bash
-rfi-pipeline-progress rundir [options]
+bart-progress rundir [options]
 ```
 
 #### Examples
 ```bash
 # Check progress once and exit
-rfi-pipeline-progress /path/to/pipeline/output
+bart-progress /path/to/pipeline/output
 
 # Monitor continuously with 5-second updates
-rfi-pipeline-progress /path/to/pipeline/output --update-interval 5
+bart-progress /path/to/pipeline/output --update-interval 5
 
 # Monitor without screen clearing (useful for SSH terminals)
-rfi-pipeline-progress /path/to/pipeline/output -n 3 --no-clear
+bart-progress /path/to/pipeline/output -n 3 --no-clear
 
 # Force single run (useful when you want to override default behavior)
-rfi-pipeline-progress /path/to/pipeline/output --once
+bart-progress /path/to/pipeline/output --once
 ```
 
 #### Parameters
@@ -172,22 +173,22 @@ After running the main RFI pipeline, you can merge all batch results into a sing
 
 #### Command Line Interface
 ```bash
-rfi-pipeline-merge rundir [outdir] [options]
+bart-merge rundir [outdir] [options]
 ```
 
 #### Examples
 ```bash
 # Merge batches in run directory to the same directory
-rfi-pipeline-merge /path/to/pipeline/output
+bart-merge /path/to/pipeline/output
 
 # Merge to custom output directory
-rfi-pipeline-merge /path/to/pipeline/output /path/to/merged/results
+bart-merge /path/to/pipeline/output /path/to/merged/results
 
 # Compress output and use verbose logging
-rfi-pipeline-merge /path/to/pipeline/output --compress --verbose
+bart-merge /path/to/pipeline/output --compress --verbose
 
 # Output in different formats
-rfi-pipeline-merge /path/to/pipeline/output --format parquet --compress
+bart-merge /path/to/pipeline/output --format parquet --compress
 ```
 
 #### Parameters
@@ -202,7 +203,7 @@ rfi-pipeline-merge /path/to/pipeline/output --format parquet --compress
 #### Python API
 ```python
 from pathlib import Path
-from rfi_pipeline.merge import merge_rfi_run
+from bart.merge import merge_rfi_run
 
 # Merge batch files programmatically
 output_path = merge_rfi_run(

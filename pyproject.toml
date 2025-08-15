@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "rfi-pipeline"
+name = "bart"
 version = "0.2.0"
-description = "Radio Frequency Interference Detection Pipeline for astronomical data"
+description = "BART - Breakthrough Listen's RFI analysis and batching toolkit"
 readme = "README.md"
 license = "MIT"
 authors = [
@@ -52,19 +52,20 @@ docs = [
 ]
 
 [project.urls]
+# TODO: Update URLs after the GitHub repository is renamed to match BART branding
 Homepage = "https://github.com/breakthrough-listen/rfi-pipeline"
 Documentation = "https://github.com/breakthrough-listen/rfi-pipeline#readme"
 Repository = "https://github.com/breakthrough-listen/rfi-pipeline"
 "Bug Tracker" = "https://github.com/breakthrough-listen/rfi-pipeline/issues"
 
 [project.scripts]
-rfi-pipeline = "rfi_pipeline.__main__:main"
-rfi-pipeline-progress = "rfi_pipeline.check_progress.__main__:main"
-rfi-pipeline-merge = "rfi_pipeline.merge.__main__:main"
+bart-rfi = "bart.__main__:main"
+bart-progress = "bart.check_progress.__main__:main"
+bart-merge = "bart.merge.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["rfi_pipeline*"]
+include = ["bart*"]
 exclude = ["test*", "experiments*", "__pycache__*"]
 
 [tool.setuptools.package-data]

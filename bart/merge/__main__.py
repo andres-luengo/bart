@@ -11,14 +11,14 @@ import pandas as pd
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        prog='rfi-pipeline-merge',
-        description='Merge batch CSV files from an RFI pipeline run into a single output file.'
+        prog='bart-merge',
+        description='Merge batch CSV files from a BART run into a single output file.'
     )
     
     parser.add_argument(
         'rundir',
         type=Path,
-        help='Path to the output directory of an RFI pipeline run (should contain batches/ subdirectory)'
+        help='Path to the output directory of a BART run (should contain batches/ subdirectory)'
     )
     
     parser.add_argument(
@@ -71,7 +71,7 @@ def parse_args() -> argparse.Namespace:
 
 def setup_logging(verbosity: int) -> logging.Logger:
     """Set up logging based on verbosity level."""
-    logger = logging.getLogger('rfi-pipeline-merge')
+    logger = logging.getLogger('bart-merge')
     
     # Set log level based on verbosity
     if verbosity >= 2:
@@ -329,7 +329,7 @@ def main():
     logger = setup_logging(args.verbose)
     
     try:
-        logger.info(f"Starting RFI pipeline merge for run directory: {args.rundir}")
+        logger.info(f"Starting bart merge for run directory: {args.rundir}")
         
         # Validate input directory
         if not args.rundir.exists():

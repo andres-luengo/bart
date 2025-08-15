@@ -4,7 +4,7 @@ Installation
 Requirements
 ------------
 
-The RFI Pipeline requires Python 3.8 or later and has the following dependencies:
+The BART toolkit requires Python 3.8 or later and has the following dependencies:
 
 * numpy >= 1.20.0
 * pandas >= 1.3.0
@@ -29,7 +29,7 @@ Install from PyPI
 
 Once published, you will be able to install the package using pip::
 
-    pip install rfi-pipeline
+    pip install bart
 
 Development Installation
 ------------------------
@@ -38,6 +38,7 @@ To install the latest development version from the source repository:
 
 1. Clone the repository::
 
+    # Note: repository slug may still be rfi-pipeline
     git clone https://github.com/breakthrough-listen/rfi-pipeline.git
     cd rfi-pipeline
 
@@ -58,14 +59,14 @@ Verification
 
 To verify that the installation was successful, you can run::
 
-    rfi-pipeline --help
+    bart-rfi --help
 
 This should display the command-line help for the RFI pipeline tool.
 
 You can also import the package in Python::
 
-    import rfi_pipeline
-    print(rfi_pipeline.__version__)
+    import bart
+    print(bart.__version__)
 
 System Requirements
 -------------------

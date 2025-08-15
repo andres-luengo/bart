@@ -1,6 +1,6 @@
 """
-Run Manager Module
-~~~~~~~~~~~~~~~~~~
+Run Manager Module (BART)
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Provides :class:`RunManager` to run a user ``file_job`` over files in parallel.
 
@@ -12,7 +12,7 @@ Provides :class:`RunManager` to run a user ``file_job`` over files in parallel.
 * Use ``logging`` (that is, don't write directly to stdout with something like ``print``) so output is captured from workers.
 
 Each returned DataFrame is appended to ``batches/batch_<NNN>.csv`` (header once).
-To merge these batches, see :mod:`rfi_pipeline.merge`
+To merge these batches, see :mod:`bart.merge`
 
 Exceptions are logged; if ``continue_on_exception`` is False the run stops, else
 the file is marked failed (``num_hits = -1``) and processing continues.

@@ -1,6 +1,6 @@
 """
-Output Merge Module
-~~~~~~~~~~~~~~~~~~~
+Output Merge Module (BART)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 
 __version__ = "0.2.0"
@@ -21,10 +21,10 @@ def merge_rfi_run(
     read_only: bool = False
 ) -> Path:
     """
-    Merge batch CSV files from an rfi_pipeline run into a single output file.
+    Merge batch CSV files from a BART run into a single output file.
 
     Args:
-        rundir: Path to the RFI pipeline run directory (should contain batches/ subdirectory)
+        rundir: Path to the BART run directory (should contain batches/ subdirectory)
         outdir: Output directory. If None, uses rundir (same directory as the run). Default: None
         format_type: Output format ('csv', 'parquet', or 'hdf5'). Default: 'csv'
         compress: Whether to compress the output. Default: False

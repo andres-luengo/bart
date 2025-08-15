@@ -1,29 +1,29 @@
 API Reference
 =============
 
-This section contains the full API documentation for the RFI Pipeline package.
+This section contains the full API documentation for the BART package.
 
-.. currentmodule:: rfi_pipeline
+.. currentmodule:: bart
 
 Core Modules
 ------------
 
-.. automodule:: rfi_pipeline.manager
+.. automodule:: bart.manager
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: rfi_pipeline.check_progress
+.. automodule:: bart.check_progress
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: rfi_pipeline.merge
+.. automodule:: bart.merge
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: rfi_pipeline.example.filejob
+.. automodule:: bart.example.filejob
    :members:
    :undoc-members:
    :show-inheritance:

@@ -10,7 +10,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
 
-project = 'RFI Pipeline'
+project = 'BART'
 copyright = '2025, Breakthrough Listen'
 author = 'Breakthrough Listen'
 release = '0.2.0'

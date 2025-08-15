@@ -1,5 +1,5 @@
 """
-Batch Job Module
+Batch Job Module (BART)
 
 This module provides the BatchJob class for processing batches of files
 in parallel worker processes, handling progress tracking and result storage.
@@ -22,7 +22,7 @@ MAX_PROGRESS_LIST_LENGTH = 64
 
 import os
 
-import hdf5plugin # dumb. h5py import doesn't work unless this import comes beforehand.
+import hdf5plugin  # ensure h5py import works
 import h5py
 
 from numpy import ndarray

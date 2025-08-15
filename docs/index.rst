@@ -1,5 +1,5 @@
-RFI Pipeline Documentation
-==========================
+BART Documentation
+==================
 
 .. toctree::
    :maxdepth: 2
@@ -13,7 +13,7 @@ RFI Pipeline Documentation
 Overview
 --------
 
-``rfi_pipeline`` is a Python package for batching and parallelizing file processing tasks.
+``bart`` is a Python package for batching and parallelizing file processing tasks.
 
 The package is designed as a simplified framework where users can implement their own file processing functions. Features include:
 
@@ -21,7 +21,7 @@ The package is designed as a simplified framework where users can implement thei
 * Python :mod:`logging` compatibility to monitor processing.
 * Progress tracking (see :ref:`progress-monitoring`)
 
-``rfi_pipeline.example`` implements a simple algorithm for finding RFI in data from the Green Bank Telescope. This script can be executed from the command line with ``python -m rfi_pipeline`` or just ``rfi-pipeline``.
+``bart.example`` implements a simple algorithm for finding RFI in data from the Green Bank Telescope. This script can be executed from the command line with ``python -m bart`` or just ``bart-rfi``.
 
 Key Features
 ~~~~~~~~~~~~
@@ -40,7 +40,7 @@ Quick Start
 
 Installation::
 
-    pip install rfi-pipeline
+    pip install bart
 
 Basic usage:
 
@@ -53,7 +53,7 @@ Basic usage:
 
     from h5py import File
 
-    from rfi_pipeline import RunManager
+    from bart import RunManager
 
     def some_processing(file_path):
         """

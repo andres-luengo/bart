@@ -21,7 +21,7 @@ import subprocess
 def _parse_args():
     global args
 
-    parser = argparse.ArgumentParser('rfi-pipeline-progress')
+    parser = argparse.ArgumentParser('bart-progress')
 
     parser.add_argument(
         'rundir',
@@ -68,7 +68,7 @@ def _clear_screen():
             try:
                 # Try using os.system as another fallback
                 import os
-                os.system('clear 2>/dev/null || printf "\\033[2J\\033[H"')
+                os.system('clear 2>/dev/null || printf "\033[2J\033[H"')
             except:
                 try:
                     # Fallback: ANSI escape sequences with explicit flush
@@ -234,7 +234,7 @@ def main():
                 
             except FileNotFoundError:
                 print(f"Progress file not found in {args.rundir}")
-                print(f"Make sure the RFI pipeline is running in this directory.")
+                print(f"Make sure the pipeline is running in this directory.")
                 print(f"Last checked: {dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
                 print(f"Press Ctrl+C to exit")
             except json.JSONDecodeError:

@@ -1,7 +1,7 @@
 Usage Guide
 ===========
 
-The RFI Pipeline provides both command-line tools and a Python API for detecting radio frequency interference in astronomical data.
+BART provides both command-line tools and a Python API for detecting radio frequency interference in astronomical data.
 
 Command Line Tools
 ------------------
@@ -11,11 +11,11 @@ Main Pipeline Tool
 
 The primary tool for running RFI detection::
 
-    rfi-pipeline input_files.txt output_directory [options]
+    bart-rfi input_files.txt output_directory [options]
 
 **Basic Example**::
 
-    rfi-pipeline file_list.txt /path/to/output --num-processes 4 --max-rss-gb 64
+    bart-rfi file_list.txt /path/to/output --num-processes 4 --max-rss-gb 64
 
 **Input/Output Options:**
 
@@ -52,21 +52,21 @@ Progress Monitoring
 
 Monitor the progress of a running RFI pipeline::
 
-    rfi-pipeline-progress rundir [options]
+    bart-progress rundir [options]
 
 **Examples:**
 
 Check progress once and exit::
 
-    rfi-pipeline-progress /path/to/pipeline/output
+    bart-progress /path/to/pipeline/output
 
 Monitor continuously with updates every 5 seconds::
 
-    rfi-pipeline-progress /path/to/pipeline/output --update-interval 5
+    bart-progress /path/to/pipeline/output --update-interval 5
 
 Monitor without screen clearing (useful for SSH)::
 
-    rfi-pipeline-progress /path/to/pipeline/output -n 3 --no-clear
+    bart-progress /path/to/pipeline/output -n 3 --no-clear
 
 **Options:**
 
@@ -88,21 +88,21 @@ Merge Tool
 
 Merge all batch results into a single file::
 
-    rfi-pipeline-merge rundir [outdir] [options]
+    bart-merge rundir [outdir] [options]
 
 **Examples:**
 
 Merge batches to the same directory::
 
-    rfi-pipeline-merge /path/to/pipeline/output
+    bart-merge /path/to/pipeline/output
 
 Merge to custom output directory::
 
-    rfi-pipeline-merge /path/to/pipeline/output /path/to/merged/results
+    bart-merge /path/to/pipeline/output /path/to/merged/results
 
 Output with compression::
 
-    rfi-pipeline-merge /path/to/pipeline/output --compress --verbose
+    bart-merge /path/to/pipeline/output --compress --verbose
 
 **Options:**
 
@@ -122,8 +122,8 @@ Basic Usage
 
 .. code-block:: python
 
-    from rfi_pipeline import RunManager
-    from rfi_pipeline.example.filejob import FileJob
+    from bart import RunManager
+    from bart.example.filejob import FileJob
     from pathlib import Path
 
     # Example processing parameters for the example FileJob
@@ -156,15 +156,15 @@ Basic Usage
 Custom File Processors
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The RFI Pipeline is designed to work with custom file processing functions.
-The built-in processor is provided as an example in ``rfi_pipeline.example.filejob``.
+The BART framework is designed to work with custom file processing functions.
+The built-in processor is provided as an example in ``bart.example.filejob``.
 You can create your own file processor by implementing a function that takes
 just a file path and returns data convertible to a pandas DataFrame. If you
 need global parameters, pre-bind them with functools.partial or a callable class:
 
 .. code-block:: python
 
-    from rfi_pipeline.example.filejob import FileJob
+    from bart.example.filejob import FileJob
     
     # Or create your own custom processor
     from functools import partial
@@ -181,7 +181,7 @@ need global parameters, pre-bind them with functools.partial or a callable class
         # ... other parameters
     )
 
-See the documentation for :class:`~rfi_pipeline.RunManager` for details on how the processor should be defined.
+See the documentation for :class:`~bart.RunManager` for details on how the processor should be defined.
 
 Merge API
 ~~~~~~~~~
@@ -189,7 +189,7 @@ Merge API
 .. code-block:: python
 
     from pathlib import Path
-    from rfi_pipeline.merge import merge_rfi_run
+    from bart.merge import merge_rfi_run
 
     # Merge batch files programmatically
     output_path = merge_rfi_run(
@@ -206,8 +206,8 @@ Example Algorithm Details
 -------------------------
 
 Although this code is distributed with the intention that you write your own processing code, we provide
-the ``rfi_pipeline.example.filejob``
-The example RFI detection algorithm provided in ``rfi_pipeline.example.filejob`` was designed to find signals
+the ``bart.example.filejob``
+The example RFI detection algorithm provided in ``bart.example.filejob`` was designed to find signals
 (any signals)
 operates in multiple stages:
 
@@ -235,7 +235,7 @@ Each detection includes:
 Output Structure
 ----------------
 
-``rfi_pipeline`` creates the following output structure::
+``bart`` creates the following output structure::
 
     output_directory/
     ├── batches/

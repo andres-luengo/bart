@@ -3,7 +3,7 @@
 
 set -e
 
-echo "Building RFI Pipeline Documentation"
+echo "Building BART Documentation"
 echo "===================================="
 
 # Check if we're in the right directory

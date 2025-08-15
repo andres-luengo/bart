@@ -1,7 +1,7 @@
 include README.md
 include LICENSE
 include pyproject.toml
-recursive-include rfi_pipeline *.py
+recursive-include bart *.py
 recursive-exclude test *
 recursive-exclude experiments *
 recursive-exclude __pycache__ *

@@ -1,19 +1,19 @@
 """
-Example File Job Module
-~~~~~~~~~~~~~~~~~~~~~~~
+Example File Job Module (BART)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This file provides an example implementation of a filter-based signal finding algorithm
-for use with the RFI Pipeline framework. This is intended as a reference implementation
-to demonstrate how to create custom file processing functions that work with :class:`rfi_pipeline.RunManager`.
+for use with the BART framework. This is intended as a reference implementation
+to demonstrate how to create custom file processing functions that work with :class:`bart.RunManager`.
 
-When running this package as a script (i.e. ``python -m rfi_pipeline`` or ``rfi-pipeline``)
-it creates a :class:`~rfi_pipeline.manager.RunManager` with an instance of :class:`FileJob` as the file_job.
+When running this package as a script (i.e. ``python -m bart`` or ``bart-rfi``)
+it creates a :class:`~bart.manager.RunManager` with an instance of :class:`FileJob` as the file_job.
 
 Users are encouraged to create their own file processing functions based on their
 specific requirements and data analysis needs.
 """
 
-import hdf5plugin # dumb
+import hdf5plugin  # ensure h5py import works
 import h5py
 
 import numpy as np
@@ -43,7 +43,7 @@ class FileJob:
     Example implementation for processing individual HDF5 files for RFI detection.
     
     This class demonstrates how to implement a file processor that works with the
-    RFI Pipeline framework. It handles loading astronomical observation data from HDF5 files
+    BART framework. It handles loading astronomical observation data from HDF5 files
     and applies a multi-stage statistical filtering algorithm to detect radio
     frequency interference. 
     
@@ -339,10 +339,6 @@ class FileJob:
                 # Convert back to bins for consistency with original code
                 width_bins = widths / np.abs(self._foff)
 
-                # P_signal = amp * std * sqrt(2pi)
-                # P_noise = C * 'signal width' = C * 2 * sqrt(2ln2) * std
-                # should check with steve...
-                # snrs = amps * np.sqrt(np.pi / np.log(2)) / (2 * noises) 
                 noises_ = []
                 for time_idx in np.arange(block.shape[0])[valid_mask]:
                     clipped, _, _ = scipy.stats.sigmaclip(block[time_idx], low=3, high=3)
@@ -359,9 +355,7 @@ class FileJob:
                 max_snr = np.max(snrs)
                 others = np.delete(snrs, np.argmax(snrs))
                 if (
-                    # too many fits failed
                     valid_mask.sum() < block.shape[0] // 2
-                    # max is way bigger than others
                     or max_snr - np.median(others) > 5 * np.std(others)
                 ):
                     flags.append('blip')
@@ -370,7 +364,6 @@ class FileJob:
                 mean = snr = width = np.nan
                 flags.append(f'no valid fits')
                 self._logger.warning(f'Could not fit any Gaussians to block at {block_l_index}')
-                # consider just dropping the block at this point tbh
 
             # normalize to stop kurtosis from exploding
             block_normalized = (block - np.mean(block)) / np.std(block)

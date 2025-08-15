@@ -21,11 +21,11 @@ Running Basic Detection
 
 Run the pipeline with default settings::
 
-    rfi-pipeline file_list.txt /output/basic_run
+    bart-rfi file_list.txt /output/basic_run
 
 Run with custom thresholds::
 
-    rfi-pipeline file_list.txt /output/custom_run \
+    bart-rfi file_list.txt /output/custom_run \
         --warm-significance 5.0 \
         --hot-significance 10.0 \
         --frequency-block-size 2048
@@ -38,7 +38,7 @@ High-Performance Processing
 
 For large datasets with multiple CPU cores::
 
-    rfi-pipeline file_list.txt /output/parallel_run \
+    bart-rfi file_list.txt /output/parallel_run \
         --num-processes 8 \
         --max-rss-gb 256 \
         --num-batches 200
@@ -48,7 +48,7 @@ Frequency Range Filtering
 
 Process only specific frequency ranges::
 
-    rfi-pipeline file_list.txt /output/filtered_run \
+    bart-rfi file_list.txt /output/filtered_run \
         --min-freq 1000.0 \
         --max-freq 2000.0 \
         --frequency-block-size 512
@@ -58,7 +58,7 @@ Resuming Interrupted Jobs
 
 If a job is interrupted, resume from the last processed file::
 
-    rfi-pipeline file_list.txt /output/resumed_run --resume
+    bart-rfi file_list.txt /output/resumed_run --resume
 
 Monitoring and Analysis
 -----------------------
@@ -69,13 +69,13 @@ Real-time Progress Monitoring
 Monitor a running job::
 
     # Check once and exit
-    rfi-pipeline-progress /output/my_run
+    bart-progress /output/my_run
 
     # Monitor continuously with 10-second updates
-    rfi-pipeline-progress /output/my_run --update-interval 10
+    bart-progress /output/my_run --update-interval 10
 
     # Monitor in SSH session (no screen clearing)
-    rfi-pipeline-progress /output/my_run --update-interval 5 --no-clear
+    bart-progress /output/my_run --update-interval 5 --no-clear
 
 Merging Results
 ~~~~~~~~~~~~~~~
@@ -83,10 +83,10 @@ Merging Results
 After processing completes, merge all batch results::
 
     # Merge to same directory
-    rfi-pipeline-merge /output/my_run
+    bart-merge /output/my_run
 
     # Merge to custom location with compression
-    rfi-pipeline-merge /output/my_run /results/merged \
+    bart-merge /output/my_run /results/merged \
         --format parquet \
         --compress \
         --sort-by frequency
@@ -99,8 +99,8 @@ Programmatic Processing
 
 .. code-block:: python
 
-    from rfi_pipeline import RunManager
-    from rfi_pipeline.example import FileJob
+    from bart import RunManager
+    from bart.example import FileJob
     from pathlib import Path
     import logging
 
@@ -142,7 +142,7 @@ Memory-Efficient Processing
 For very large datasets that don't fit in memory::
 
     # Process in smaller batches with limited memory
-    rfi-pipeline large_file_list.txt /output/memory_efficient \
+    bart-rfi large_file_list.txt /output/memory_efficient \
         --num-processes 2 \
         --max-rss-gb 16 \
         --num-batches 500 \
@@ -154,12 +154,12 @@ Fault-Tolerant Processing
 Set up processing that can handle file errors gracefully::
 
     # Use many small batches for better fault tolerance
-    rfi-pipeline unreliable_files.txt /output/fault_tolerant \
+    bart-rfi unreliable_files.txt /output/fault_tolerant \
         --num-batches 1000 \
         --verbose
 
     # Monitor progress and resume if needed
-    rfi-pipeline-progress /output/fault_tolerant --update-interval 30
+    bart-progress /output/fault_tolerant --update-interval 30
 
 Data Analysis Examples
 ----------------------
@@ -241,7 +241,7 @@ Tuning Parameters
 .. code-block:: python
 
     from pathlib import Path
-    from rfi_pipeline.example import FileJob
+    from bart.example import FileJob
 
     # Test different parameter combinations
     parameter_sets = [
@@ -270,7 +270,7 @@ Profiling Performance
     import time
     import numpy as np
     from pathlib import Path
-    from rfi_pipeline.example.filejob import FileJob
+    from bart.example.filejob import FileJob
 
     def benchmark_processing(file_path, process_params, iterations=3):
         """Benchmark processing time for a single file."""

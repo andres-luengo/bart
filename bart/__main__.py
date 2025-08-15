@@ -13,7 +13,7 @@ import os
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog = 'rfi-pipeline'
+        prog = 'bart-rfi'
     )
     io_group = parser.add_argument_group('Input and Output')
     io_group.add_argument(
