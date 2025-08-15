@@ -1,10 +1,17 @@
+"""
+Batch Job Module (BART)
+
+This module provides the BatchJob class for processing batches of files
+in parallel worker processes, handling progress tracking and result storage.
+"""
+
 import pandas as pd
 
 from pathlib import Path
 
 import logging
 
-from typing import Any
+from typing import Any, Callable, Sequence, Iterable
 from threading import Lock
 
 import datetime as dt
@@ -14,29 +21,39 @@ import json
 MAX_PROGRESS_LIST_LENGTH = 64
 
 import os
-import time
 
-import hdf5plugin # dumb
+import hdf5plugin  # ensure h5py import works
 import h5py
 
-from .filejob import FileJob
+from numpy import ndarray
 
-# stuff to think about:
-# - SIGINT
-# - getting rid of gaussian fitting step
-
+PandasData = ndarray | Iterable | dict | pd.DataFrame
 class BatchJob:
+    """
+    Processes a batch of files within a single worker process.
+    
+    The BatchJob class manages the processing of a subset of files assigned to
+    a worker process. It handles individual file processing, progress tracking,
+    result accumulation, and saving batch results to CSV files.
+    
+    Attributes:
+        file_job: Function to process individual files
+        batch: List of files in this batch
+        batch_num: Numeric identifier for this batch
+        save_path: Path where batch results will be saved
+        files_csv_path: Path to the files metadata CSV
+    """
     def __init__(
             self, *,
-            process_params: dict[str, Any],
+            file_job: Callable[[os.PathLike], PandasData],
             outdir: Path, 
-            batch: tuple[Path, ...], 
+            batch: Sequence[Path], 
             meta_lock: Lock,
             batch_num: int = -1,
+            continue_on_exception = False
     ):
+        self.file_job = file_job
         self._logger = logging.getLogger(f'{__name__} (batch {batch_num:>03})')
-
-        self.process_params = process_params
 
         self.batch = batch
         self.batch_num = batch_num
@@ -46,6 +63,8 @@ class BatchJob:
 
         self._meta_lock = meta_lock
         self._progress_data_path = outdir / 'progress-data.json'
+
+        self._continue_on_exception = continue_on_exception
 
         with self.get_progress_data() as progress_data:
             batch_data = progress_data[self.batch_num]
@@ -65,16 +84,19 @@ class BatchJob:
             try:
                 # Extract file header information
                 file_info = self._extract_file_info(file)
-                df = FileJob(file, self.process_params).run()
-            except Exception:
+                data = self.file_job(file)
+                df = pd.DataFrame(data)
+            except Exception as e:
                 self._logger.error(f'Something went wrong on file {file}!', exc_info=True)
                 df = None
+                if not self._continue_on_exception: raise e
             else:
-                df['source file'] = str(file)
-                df.to_csv(self.save_path, header=keep_header, mode='a', index=False)
-                if keep_header:
-                    self._logger.info(f'Saved to {self.save_path}.')
-                    keep_header = False
+                if not df.empty:
+                    df['source file'] = str(file)
+                    df.to_csv(self.save_path, header=keep_header, mode='a', index=False)
+                    if keep_header:
+                        self._logger.info(f'Saved to {self.save_path}.')
+                        keep_header = False
 
             # Update files.csv with file information
             self._update_files_csv(file, df, file_info)
@@ -105,11 +127,11 @@ class BatchJob:
             if 'hit counts' not in batch_progress: 
                 batch_progress['hit counts'] = []
             hit_counts: list[int] = batch_progress['hit counts']
-            if df is None: # something went wrong
+            if df is None:  # error
                 hit_counts.append(-1)
-            elif df.iloc[0]['flags'] == 'EMPTY FILE':
+            elif df.empty:  # no results
                 hit_counts.append(0)
-            else:
+            else:  # normal results
                 hit_counts.append(len(df))
             if len(hit_counts) > MAX_PROGRESS_LIST_LENGTH:
                 hit_counts.pop(0)
@@ -171,10 +193,7 @@ class BatchJob:
         # Determine number of hits
         num_hits = -1  # Default for failed processing
         if df is not None:
-            if len(df) == 1 and df.iloc[0]['flags'] == 'EMPTY FILE':
-                num_hits = 0
-            else:
-                num_hits = len(df)
+            num_hits = 0 if df.empty else len(df)
         
         # Get current time in ISO format (UTC timezone)
         iso_time_completed = dt.datetime.now(dt.timezone.utc).isoformat()

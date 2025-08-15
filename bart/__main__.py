@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 
-from .manager import Manager
+from .manager import RunManager
 
 import logging, logging.handlers
 import shutil
@@ -13,7 +13,7 @@ import os
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog = 'rfi-pipeline'
+        prog = 'bart-rfi'
     )
     io_group = parser.add_argument_group('Input and Output')
     io_group.add_argument(
@@ -176,37 +176,6 @@ def make_outdir(args: argparse.Namespace):
 
     shutil.copyfile(args.infile, args.outdir / 'target-list.txt')
 
-def logging_setup(args: argparse.Namespace):
-    logger = logging.getLogger()
-
-    formatter = logging.Formatter(
-        '%(asctime)s | %(levelname)s | %(name)s (%(process)d): %(message)s'
-    )
-
-    level = 30 + 10 * (args.quiet - args.verbose)
-    stderr_handler = logging.StreamHandler()
-    stderr_handler.setLevel(level)
-    stderr_handler.setFormatter(formatter)
-
-    file_handler = logging.handlers.RotatingFileHandler(
-        filename = args.outdir / 'logs' / 'all_logs.log',
-        maxBytes = 2**20, # 1 MiB
-        backupCount = 3, # so max of 4 MiB,
-    )
-    file_handler.setLevel(min(logging.INFO, level))
-    file_handler.setFormatter(formatter)
-
-    # if error files long enough that this is a problem, there are bigger ones
-    err_file_handler = logging.FileHandler(
-        filename = args.outdir / 'logs' / 'error_logs.log'
-    )
-    err_file_handler.setLevel(logging.ERROR)
-    err_file_handler.setFormatter(formatter)
-
-    logger.addHandler(stderr_handler)
-    logger.addHandler(file_handler)
-    logger.addHandler(err_file_handler)
-    logger.setLevel(logging.DEBUG)
 
 def get_file_names(file: Path) -> tuple[Path, ...]:
     with file.open('r') as f:
@@ -217,9 +186,22 @@ def get_file_names(file: Path) -> tuple[Path, ...]:
 def main():
     args = parse_args()
     make_outdir(args)
-    logging_setup(args)
     files = get_file_names(args.infile)
-    manager = Manager.from_namespace(args, files)
+    # Map CLI args to FileJob processing params
+    # Lazy import to avoid requiring heavy deps just to view --help
+    from .example.filejob import FileJob
+    process_params = {
+        'freq_window': args.frequency_block_size,
+        'warm_significance': args.warm_significance,
+        'hot_significance': args.hot_significance,
+        'hotter_significance': args.hotter_significance,
+        'sigma_clip': args.sigma_clip,
+        'min_freq': args.min_freq,
+        'max_freq': args.max_freq,
+    }
+    # Initialize a callable FileJob instance with global parameters
+    file_job = FileJob(process_params)
+    manager = RunManager._from_namespace(file_job, args, files)
     manager.run()
 
 if __name__ == '__main__': main()
